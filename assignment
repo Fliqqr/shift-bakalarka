@@ -1,3 +1,15 @@
-Aplikácie kritické z pohľadu bezpečnosti (automobilový priemysel) alebo misie (vesmírny priemysel) potrebujú dosahovať vysokú úroveň spoľahlivosti a bezpečnosti. V poslednej dobe tieto aplikácie potrebujú čím ďalej vyšší výpočtový výkon, načo sú potrebné aj tie najvyspelejšie čipy. Tie čerpajú výhody zo zmenšovania štruktúr tranzistorov, vyššej hustoty integrácie a nárastu frekvencie. Nevýhodou je, že tieto zmeny vedú aj k vyššej náchylnosti na poruchy spôsobené v dôsledku radiácie, čoho prejavom sú náhodné preklopenia hodnôt pamäťových prvkov na čipe. Jedným zo spôsobov zabezpečenia spoľahlivej prevádzky aj pri takýchto podmienkach je použitie softvérovo implementovanej tolerancie hardvérových porúch. Tento spôsob zabezpečenia referuje na sadu techník, ktoré umožňujú softvéru detegovať a v rámci možností aj opraviť poruchy, ktoré ovplyvňujú hardvér, na ktorom sa daný softvér vykonáva.
+Aplikácie kritické z pohľadu bezpečnosti (automobilový priemysel) alebo misie (vesmírny priemysel) 
+potrebujú dosahovať vysokú úroveň spoľahlivosti a bezpečnosti. 
+V poslednej dobe tieto aplikácie potrebujú čím ďalej vyšší výpočtový výkon, 
+načo sú potrebné aj tie najvyspelejšie čipy. Tie čerpajú výhody zo zmenšovania štruktúr tranzistorov, 
+vyššej hustoty integrácie a nárastu frekvencie. 
+Nevýhodou je, že tieto zmeny vedú aj k vyššej náchylnosti na poruchy spôsobené v dôsledku radiácie, 
+čoho prejavom sú náhodné preklopenia hodnôt pamäťových prvkov na čipe. 
+Jedným zo spôsobov zabezpečenia spoľahlivej prevádzky aj pri takýchto podmienkach je použitie 
+softvérovo implementovanej tolerancie hardvérových porúch. 
+Tento spôsob zabezpečenia referuje na sadu techník, ktoré umožňujú softvéru detegovať 
+a v rámci možností aj opraviť poruchy, ktoré ovplyvňujú hardvér, na ktorom sa daný softvér vykonáva.
 
-Analyzujte a porovnajte dostupné techniky softvérovo implementovanej tolerancie hardvérových porúch. Navrhnite aplikáciu na báze operačného systém reálneho času FreeRTOS pre vnorený systém, ktorá bude zabezpečená vybranou technikou. Navrhnite testovacie scenáre a vyhodnoťte zabezpečenie.
+Analyzujte a porovnajte dostupné techniky softvérovo implementovanej tolerancie hardvérových porúch. 
+Navrhnite aplikáciu na báze operačného systém reálneho času FreeRTOS pre vnorený systém, 
+ktorá bude zabezpečená vybranou technikou. Navrhnite testovacie scenáre a vyhodnoťte zabezpečenie.
