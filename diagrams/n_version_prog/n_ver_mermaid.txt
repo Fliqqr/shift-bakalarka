@@ -1,0 +1,23 @@
+---
+config:
+  look: classic
+---
+flowchart LR
+    subgraph " "
+    direction LR
+
+    I@{ shape: circle, label: "Input" }
+    S[Selection algorithm]
+    O@{ shape: dbl-circ, label: "Output" }
+
+    subgraph V[Parallel execution]
+    direction LR
+    v1[Version 1]
+    v2[Version 2]
+    v3[...]
+    v4[Version N]
+    end
+
+    I --> v1 & v2 & v3 & v4 --> S --> O
+
+    end
