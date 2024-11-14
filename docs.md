@@ -1,11 +1,27 @@
-\title{\Huge \textbf{Software-Implemented Hardware Fault Tolerance}}
+\title{\Huge \textbf{Software-Implemented Fault Tolerance}}
 \author{Filip Ďuriš}
 
 \maketitle
 
 \newpage
 
-# 1. Cause of errors
+# 1. Types of errors
+
+Errors can be caused numerous factors, some of which are under the control of developers and some which are not. Generally speaking, we can split errors into two categories - hardware and software errors.
+
+## 1.1 Hardware errors
+
+Hardware errors are caused by external factors beyond our control, as a software developer, such as radiation in space or adverse weater conditions on Earth. In order to create robust and reliable software, which can continue operation when when hardware errors do occur, we must implement software redundancies which maximize the likelyhood of the software executing correctly under all conditions.
+
+The most common hardware error is memory corruption. Memory corruption can be caused by many factors and appear in various forms. An exampl of memory corruption might be a region of the file-system being tampered with due to physical damager, or just a single bit being flipped in RAM as a result of radiation.
+
+A common factor between hardware errors is their unexpected nature and their ability to result in both complete system corruption resulting in unrecoverable state, but also the possibility of small, hard-to-detect corruptions which might be visibly impact the functioning of the software.
+
+## 1.2 Software errors
+
+Software errors are mistakes or flaws within our control as software developers, often stemming from issues in the development process itself. These errors are typically caused by improper handling of user inputs, faulty logic, or inadequate resource management, among other issues. Recognizing that software will likely contain bugs, regardless of development rigor, is essential to creating resilient and fault-tolerant applications. Accepting the inevitability of bugs allows developers to incorporate strategies for managing potential failures.
+
+To ensure that software remains robust and as free of errors as possible, there are several effective strategies. One promising approach is the use of memory-safe programming languages, specifically Rust. Rust is a modern language that has gained traction for its safety features, particularly in system programming and embedded applications. It ensures high performance through zero-cost abstractions and introduces an innovative memory ownership model, which reduces memory-related errors such as null pointer dereferencing and data races. This model makes Rust particularly well-suited for low-level and resource-constrained environments, where reliable memory management is crucial. (https://docs.rust-embedded.org/book/)
 
 # 2. Fault tolerant software
 
@@ -16,15 +32,13 @@
 Single version is a technique which focuses on adding safety checks and redundancies into a singular version of the software, that make it the most resilient against error and external factors.
 This includes detection of faults and ability to recover from them.
 
-## 2.2.1 Modularity
+### 2.2.1 Modularity
 
-## 2.2.2 Error detection
+### 2.2.2 Error detection
 
-## 2.2.3 Exception handling
+### 2.2.3 Exception handling
 
-## 2.2.4 Checkpoint and restart
-
-## 2.2.5 Process pairs
+### 2.2.4 Checkpoint and restart
 
 ## 2.3 Multi-version
 
@@ -38,7 +52,7 @@ The recovery blocks technique builds upon the principles of single-version progr
 In practice, recovery blocks create a “recovery checkpoint” prior to executing a version of the software. This checkpoint captures the software's state immediately before execution, allowing the system to revert to this state if an error occurs during processing. If the initial version fails, the system rolls back to the checkpoint and proceeds with a different version, which enhances fault tolerance. This approach not only isolates errors but also enables rapid recovery by preventing errors from propagating, thus preserving the stability and continuity of the overall system.
 
 ![Fig. 1](./diagrams/recovery_blocks/recovery_blocks_01.png)
-*Figure 1: Recovery Blocks*
+_Figure 1: Recovery Blocks_
 
 A key advantage of the recovery blocks technique is that, in most cases, the initial version will execute successfully, allowing subsequent versions to prioritize redundancy and safety over performance. This enables the design of backup versions with gradually reduced performance requirements, ensuring robust fallback options without excessive resource consumption.
 
@@ -55,7 +69,7 @@ N-version programming extends the multi-version technique by running the same ta
 This consensus is usually achieved through a voting algorithm, which aggregates the outputs from each version and selects the result agreed upon by the majority, thereby reducing the likelihood of errors impacting the system. By leveraging redundancy and voting, N-version programming enhances system reliability and fault tolerance. However, implementing this technique requires careful design to ensure that each version performs equivalently yet independently, minimizing correlated failures and maximizing the robustness of the overall system. Additionally, the increased complexity of maintaining multiple synchronized versions demands significant testing and validation efforts to ensure accurate and efficient performance across all versions.
 
 ![Fig. 2](./diagrams/n_version_prog/n_version_prog.png)
-*Figure 2: N-Version Programming*
+_Figure 2: N-Version Programming_
 
 The primary drawback of N-version programming is its requirement to execute all versions either in parallel or sequentially before determining the final output. This can be highly resource-intensive, especially for large or complex tasks, as it necessitates significant computational power and memory to run multiple versions simultaneously.
 
