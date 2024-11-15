@@ -5,6 +5,12 @@
 
 \newpage
 
+## Abstract
+
+_With the increasing demand for high-performance embedded software comes the inevitable,difficult task of ensuring fault-free functioning of ever-more complex systems. The increased complexity, both in terms of hardware components and software features, increases the number of failure points where errors can occur. Errors can be caused by both external factors beyond our control such as radiation in space, but also as a result of human error while designing the software. Due to the incredibly complex nature of this problem, it is unlikely we will be desiging completely error-free software and hardware in the near future. This simple fact makes fault-tolerance in our software design a necessity, especially when designing critical systems. However, as with most things, fault-tolerance and reliability is a tradeoff, which usually comes at the cost of performance and development time. This paper will aim to analyze various common fault-tolerance methods and compare their benefits and drawback, as well as construct a working demo based on FreeRTOS implementing and testing the effectiveness of some select methods._
+
+\newpage
+
 # 1. Types of errors
 
 Errors can be caused numerous factors, some of which are under the control of developers and some which are not. Generally speaking, we can split errors into two categories - hardware and software errors.
@@ -13,9 +19,9 @@ Errors can be caused numerous factors, some of which are under the control of de
 
 Hardware errors are caused by external factors beyond our control, as a software developer, such as radiation in space or adverse weater conditions on Earth. In order to create robust and reliable software, which can continue operation when when hardware errors do occur, we must implement software redundancies which maximize the likelyhood of the software executing correctly under all conditions.
 
-The most common hardware error is memory corruption. Memory corruption can be caused by many factors and appear in various forms. An exampl of memory corruption might be a region of the file-system being tampered with due to physical damager, or just a single bit being flipped in RAM as a result of radiation.
+The most common hardware error is memory corruption. Memory corruption can be caused by many factors and appear in various forms. An example of memory corruption might be a region of the file-system being tampered with due to physical damage, or just a single bit being flipped in RAM as a result of radiation.
 
-A common factor between hardware errors is their unexpected nature and their ability to result in both complete system corruption resulting in unrecoverable state, but also the possibility of small, hard-to-detect corruptions which might be visibly impact the functioning of the software.
+A common factor between hardware errors is their unexpected nature and their ability to result in both complete system corruption resulting in unrecoverable state, but also the possibility of small, hard-to-detect corruptions which might not visibly impact the functioning of the software.
 
 ## 1.2 Software errors
 
@@ -34,6 +40,18 @@ This includes detection of faults and ability to recover from them.
 
 ### 2.2.1 Modularity
 
+Perhaps the simplest way we can create a more resilient software is to structure it into independed modules. Each module should handle one task and, when possible, not directly rely upon any other modules for its functionality, or be relied upon.
+
+A technique commonly utilized to achieve modularity is partitioning, which can be divided into horizonatal and vertical partitioning. Horizontal partitioning aims to split the software into independent structural branches communicating through interfaces. Vertical partitioning splits the software in a top-down fashion, where higher level modules are tasked with control logic while lower level modules do most of the processing (https://ntrs.nasa.gov/api/citations/20000120144/downloads/20000120144.pdf).
+
+![Horizontal](./diagrams/modularity/horizontal.png)
+_Figure 1: Horizontal partitioning_
+
+![Vertical](./diagrams/modularity/vertical.png)
+_Figure 2: Vertical partitioning_
+
+Benefit of partitioning is the ability of software to isolate errors. Provided the sofware is correctly structured, an error occuring in a single module should not propagate to other modules. Meaning we can use modularity as a way to pinpoint the erroneous parts of software and attempt recovery. If recovery is not possible, the software should still be able to partially function, given that other parts of the software are not influenced by the fault. In most situations, partial functioning of a software is preferrable to a complete shutdown.
+
 ### 2.2.2 Error detection
 
 ### 2.2.3 Exception handling
@@ -51,8 +69,8 @@ The recovery blocks technique builds upon the principles of single-version progr
 
 In practice, recovery blocks create a “recovery checkpoint” prior to executing a version of the software. This checkpoint captures the software's state immediately before execution, allowing the system to revert to this state if an error occurs during processing. If the initial version fails, the system rolls back to the checkpoint and proceeds with a different version, which enhances fault tolerance. This approach not only isolates errors but also enables rapid recovery by preventing errors from propagating, thus preserving the stability and continuity of the overall system.
 
-![Fig. 1](./diagrams/recovery_blocks/recovery_blocks_01.png)
-_Figure 1: Recovery Blocks_
+![Fig. 3](./diagrams/recovery_blocks/recovery_blocks_01.png)
+_Figure 3: Recovery Blocks_
 
 A key advantage of the recovery blocks technique is that, in most cases, the initial version will execute successfully, allowing subsequent versions to prioritize redundancy and safety over performance. This enables the design of backup versions with gradually reduced performance requirements, ensuring robust fallback options without excessive resource consumption.
 
@@ -68,8 +86,8 @@ N-version programming extends the multi-version technique by running the same ta
 
 This consensus is usually achieved through a voting algorithm, which aggregates the outputs from each version and selects the result agreed upon by the majority, thereby reducing the likelihood of errors impacting the system. By leveraging redundancy and voting, N-version programming enhances system reliability and fault tolerance. However, implementing this technique requires careful design to ensure that each version performs equivalently yet independently, minimizing correlated failures and maximizing the robustness of the overall system. Additionally, the increased complexity of maintaining multiple synchronized versions demands significant testing and validation efforts to ensure accurate and efficient performance across all versions.
 
-![Fig. 2](./diagrams/n_version_prog/n_version_prog.png)
-_Figure 2: N-Version Programming_
+![Fig. 4](./diagrams/n_version_prog/n_version_prog.png)
+_Figure 4: N-Version Programming_
 
 The primary drawback of N-version programming is its requirement to execute all versions either in parallel or sequentially before determining the final output. This can be highly resource-intensive, especially for large or complex tasks, as it necessitates significant computational power and memory to run multiple versions simultaneously.
 

@@ -1,0 +1,23 @@
+---
+config:
+  look: classic
+---
+flowchart LR
+    subgraph " "
+    direction TB
+
+    subgraph MA[Module A]
+    direction LR
+    t1[Control Logic]
+    end
+
+    subgraph MB[Module B]
+    direction TB
+    tb1[Process 1]
+    tb2[Process 2]
+    tb3[...]
+    end
+
+    MA <-- Interface --> MB
+
+    end
