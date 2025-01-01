@@ -1,0 +1,25 @@
+\contentsline {section}{\numberline {1}Nomenclature}{4}{}%
+\contentsline {subsection}{\numberline {1.1}Common terms}{4}{}%
+\contentsline {section}{\numberline {2}Types of faults}{4}{}%
+\contentsline {subsection}{\numberline {2.1}Transient fault}{5}{}%
+\contentsline {subsection}{\numberline {2.2}Permanent fault}{5}{}%
+\contentsline {subsection}{\numberline {2.3}Hardware faults}{5}{}%
+\contentsline {subsection}{\numberline {2.4}Development faults}{6}{}%
+\contentsline {section}{\numberline {3}Fault tolerance techniques}{7}{}%
+\contentsline {subsection}{\numberline {3.1}Single version}{7}{}%
+\contentsline {subsubsection}{\numberline {3.1.1}Modularity}{8}{}%
+\contentsline {subsubsection}{\numberline {3.1.2}Error detection}{9}{}%
+\contentsline {subsubsection}{\numberline {3.1.3}Checkpoint and restart}{10}{}%
+\contentsline {subsubsection}{\numberline {3.1.4}Considerations for single version techniques}{11}{}%
+\contentsline {subsection}{\numberline {3.2}Multi-version}{11}{}%
+\contentsline {subsubsection}{\numberline {3.2.1}Recovery blocks}{11}{}%
+\contentsline {subsubsection}{\numberline {3.2.2}N-version programming}{14}{}%
+\contentsline {subsubsection}{\numberline {3.2.3}N Self-checking programming}{16}{}%
+\contentsline {subsubsection}{\numberline {3.2.4}Drawbacks of multi-version programming}{16}{}%
+\contentsline {subsection}{\numberline {3.3}Data Diversity}{17}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}Failure Regions}{17}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}Data Reexpression}{17}{}%
+\contentsline {subsection}{\numberline {3.4}Miscellaneous}{18}{}%
+\contentsline {section}{\numberline {4}Implementation}{19}{}%
+\contentsline {subsection}{\numberline {4.1}Rust}{19}{}%
+\contentsline {subsection}{\numberline {4.2}Tools}{19}{}%
