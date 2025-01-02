@@ -335,10 +335,23 @@ Currently, testing is being done on https://github.com/lobaro/FreeRTOS-rust whic
 This approach appears to be promising so far, at the very least, the provided examples compile.
 \begin{figure}[hbt]
     \centering
-    \includegraphics[width=0.7\textwidth]{diagrams/screenshots/freertos-rust-example.png}
+    \includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-rust-example.png}
     \caption{FreeRTOS-Rust}
     \label{fig:freertos-rust}
 \end{figure}
+
+Should Rust implementation prove to be impossible, I have also set up standard C-only FreeRTOS for testing:
+
+\begin{figure}[hbt]
+    \centering
+    \includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-c-example.png}
+    \caption{FreeRTOS with standard C}
+    \label{fig:freertos-c}
+\end{figure}
+
+\subsection{Ideas}
+
+\subsubsection{CFCSS}
 
 A simplified CFCSS-like system could be created with Rusts macro features. Rust macros allow for the execution of arbitrary Rust code at compile time, this could be used to generate signatures for each function branching off of the root (marked as CFCSS\_start) and add validation logic to each of the functions.
 
@@ -372,6 +385,8 @@ fn main() {
 }
 \end{lstlisting}
 
+\subsubsection{Checksum on data types}
+
 Another interesting thing that could be implemented using Rusts macro system is checksum protected structs. An arbitrary struct could have a "checksum" macro derived on it, which would implement an interface for safely interacting with the underlying data. This could also double as a read/write lock to ensure thread safety.
 
 \begin{lstlisting}[language=Rust]
@@ -382,7 +397,7 @@ struct Point2D {
 }
 
 fn main() {
-    let point = Point2D { 3.14, 2.6 };
+    let mut point = Point2D { 3.14, 2.6 };
 
     // Performs a checksum on point before and after use, 
     // raising an error if either detects an issue 
@@ -403,6 +418,66 @@ fn main() {
     }
 }
 \end{lstlisting}
+
+\subsubsection{Acceptance testing}
+
+One major benfit of Rust is its approach to errors as value. This means we can use built-in Rust tooling to easily implements things like acceptance checks, since we can pass arbitrary error message into the acceptance check.
+
+\begin{lstlisting}[language=Rust]
+fn unsafe_process(input: u64) -> Result<u64, String> {
+    if input < 5 {
+        return Err("Input cannot be less than 5".into());
+    }
+
+    Ok(input + 2)
+}
+
+fn acceptance_check(res: Result<u64, String>) 
+-> Result<u64, String> 
+{
+    let output = match res {
+        Err(error) => {
+            // Handle obvious error
+            return Err(format!(
+                "Process failed with error: {}", error
+            ));
+        }
+        Ok(output) => output,
+    };
+
+    /* 
+    Perform other checks to ensure output matches 
+    our criteria that might have not been tested 
+    during output generation.
+    */
+    if output > 10 {
+        return Err("Output cannot be larger than 10".into());
+    }
+
+    Ok(output)
+}
+
+fn main() -> Result<(), String> {
+    // This will execute correctly
+    let output = acceptance_check(unsafe_process(6))?;
+    println!("Output: {}", output);
+
+    // This will fail during initial execution
+    acceptance_check(unsafe_process(2))?;
+
+    // This will fail acceptance check
+    acceptance_check(unsafe_process(9))?;
+
+    Ok(())
+}
+\end{lstlisting}
+
+\newpage
+
+"The space industry has a general hesitance to adopt Rust due to perceived newness and lack of industry maturity. Rust can improve safety reliability and offer predictable performance." 
+- Spencer C. Imbleau
+
+Spencer. C. Imbleau is a member of the AeroRust group, which aims to make Rust mainstream in the aerospace industry. He pointed me towards some useful libraries which are specifically made for embedded systems. https://aerorust.org/catalogue. One particularly interesting project is Rust implemented error correction library, which does not use the standard library, and can therefore be easily integrated with FreeRTOS.
 
 \newpage
 \printbibliography
