@@ -4,11 +4,15 @@
     style=alphabetic,
 ]{biblatex}
 \usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{pdfpages}
 \usepackage{listings, listings-rust}
 \graphicspath{{diagrams/}}
 \addbibresource{sources.bib}
 
-\title{\Huge \textbf{Software-Implemented Fault Tolerance}}
+\title{
+    \Huge \textbf{Software-Implemented Fault Tolerance}
+}
 \author{Filip Ďuriš}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -39,7 +43,9 @@
 
 \begin{document}
 
-\maketitle
+\includepdf[pages={1}]{front_page.pdf}
+
+% \maketitle
 
 \newpage
 
@@ -48,7 +54,7 @@ With the increasing demand for high-performance embedded software comes the inev
 
 Errors can be caused by both external factors beyond our control such as radiation in space, but also as a result of human error while designing the software. Due to the incredibly complex nature of this problem, it is unlikely that we will be designing completely error-free software and hardware in the near future. This simple fact makes fault-tolerance an important aspect of software design, especially when designing critical systems whose failure could endanger human life. However, as with most things, fault-tolerance and reliability is a trade-off, which usually comes at the cost of performance, development time and cost.
 
-This paper will aim to analyze various commonly implemented fault-tolerance methods. We will look at the benefits and drawbacks of the utilized methods, as well as construct a working demo based on FreeRTOS that implements and tests the effectiveness of some selected methods.
+This thesis will aim to analyze various commonly implemented fault-tolerance methods. We will look at the benefits and drawbacks of the utilized methods, as well as construct a working demo based on FreeRTOS that implements and tests the effectiveness of some selected methods.
 \end{abstract}
 
 \newpage
@@ -73,7 +79,7 @@ For the sake of consistency in the terms used in this document, we will refer to
 
 \section{Types of faults}
 
-In order to be able to talk about fault tolerance, we first need to understand the various types of faults that we might encounter. This list is not exhaustive and only covers fault types relevant to this paper, for more complete list see \cite{1335465}. It is also important to understand two different classifications are not always mutually exclusive. As we will see later on, a solid fault, for example, can be caused during development, but can also be a product of external factors.
+In order to be able to talk about fault tolerance, we first need to understand the various types of faults that we might encounter. This list is not exhaustive and only covers fault types relevant to this thesis, for more complete list see \cite{1335465}. It is also important to understand two different classifications are not always mutually exclusive. As we will see later on, a solid fault, for example, can be caused during development, but can also be a product of external factors.
 
 Faults can be further split into various categories, the ones mostly relevant to us are \textbf{external faults} which originate from outside the system boundaries and propagate into the system. Which also includes \textbf{natural faults} that are caused by natural phenomena without human participation. These faults can the hardware and the software, which is why we can further classify them as \textbf{hardware faults} and \textbf{software faults} \cite{1335465}. \\
 
@@ -272,7 +278,7 @@ fn main() {
 
 The primary drawback of N-version programming is its requirement to execute all of the versions before determining the final output. This can be highly resource-intensive, especially for large or complex tasks, as it requires significant computational power and memory to run multiple versions simultaneously.
 
-For systems with limited resources, such as embedded systems, this approach can be particularly inefficient. The need to allocate resources for each version can strain the system’s capabilities, potentially reducing its overall performance and responsiveness. As a result, while N-version programming enhances fault tolerance and reliability, it may not be suitable for applications where resource constraints are a priority or where processing efficiency is critical.
+For systems with limited resources, such as embedded systems, this approach can be particularly inefficient. The need to allocate resources for each version can strain the system's capabilities, potentially reducing its overall performance and responsiveness. As a result, while N-version programming enhances fault tolerance and reliability, it may not be suitable for applications where resource constraints are a priority or where processing efficiency is critical.
 
 A consideration for N-version programming is the possibility of an error not being a random event, but rather a function of the input variables \cite{5326}. Therefore, even multiple versions running in parallel could all fail and give erroneous results. This makes the selection algorithm a critical failure point which N-version programming on its own does not address.
 
@@ -285,7 +291,7 @@ A version-specialized acceptance check is an interesting addition, as it provide
 The drawback here is the increase in complexity over the more simple recovery blocks which uses a shared acceptance check, or the simple N-version approach which opts for masking instead. By creating more acceptance checks we are introducing more opportunities for errors to manifest, while also spend more resource on development.
 
 
-\subsubsection{Drawbacks of multi-version programming}
+\subsubsection{Considerations for multi-version programming}
 
 The primary challenge associated with multi-version programming is the significant effort required to develop, test, and maintain several versions of software that perform the same function. This process can be resource-intensive, leading to increased costs, making it unfeasible for smaller projects or for teams with a limited budget.
 
@@ -326,11 +332,27 @@ This section will be focused on the implementation details of select fault toler
 
 \subsection{Rust}
 
-As previously mentioned, one of the goal of this paper is to implement select fault tolerance techniques using the Rust programming language. Rust is particularly well suited for software implemented fault tolerance due to its emphasis on reliability and memory safety. However, it also provides other tools that make it particularly well suited for this problem, namely the macro system. Rust's macro system allows for execution of arbitrary code at the compile time, effectively allowing us to embed fault tolerance seamlessly.
+As previously mentioned, one of the goals of this thesis is to implement select fault tolerance techniques using the Rust programming language. Rust is particularly well suited for software implemented fault tolerance due to its emphasis on reliability and memory safety. However, it also provides other tools that make it particularly well suited for this problem, namely the macro system. Rust's macro system allows for execution of arbitrary code at the compile time, effectively allowing us to embed fault tolerance seamlessly.
 
 \subsection{Tools}
 
 Currently, testing is being done on https://github.com/lobaro/FreeRTOS-rust which is based on https://github.com/hashmismatch/freertos.rs.
+
+FreeRTOS-Rust provides framework for both compiling and running FreeRTOS from within Rust. 
+
+\begin{figure}[hbt]
+    \centering
+    \includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-rust-build.png}
+    \caption{FreeRTOS-Rust build.rs}
+    \label{fig:freertos-rust-build}
+\end{figure}
+
+% \begin{figure}[hbt]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-rust-main.png}
+%     \caption{FreeRTOS-Rust main.rs}
+%     \label{fig:freertos-rust-main}
+% \end{figure}
 
 This approach appears to be promising so far, at the very least, the provided examples compile.
 \begin{figure}[hbt]
@@ -472,12 +494,74 @@ fn main() -> Result<(), String> {
 }
 \end{lstlisting}
 
-\newpage
+\subsubsection{Data reexpression in practice}
 
-"The space industry has a general hesitance to adopt Rust due to perceived newness and lack of industry maturity. Rust can improve safety reliability and offer predictable performance." 
+Sometimes even the order of the inputs makes a difference. An edge-case might only occur only given a very specific order of inputs, so if our process does not care about the order of processed data, simple reordering can provide basic fault tolerance.
+
+\begin{lstlisting}[language=Rust]
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
+/*
+Function to process input data, this only works
+if the function does not care about the order of the input.
+*/
+fn process_data(input: &[u64]) -> Result<bool, String> {
+    if input[0] == 0 {
+        return Err("edge-case".into());
+    }
+
+    Ok(true)
+}
+
+fn main() -> Result<(), String> {
+    let mut input: Vec<u64> = vec![0, 1, 2];
+
+    // Keep retrying the function until it succeeds
+    let output = loop {
+        match process_data(&input) {
+            Err(error) => {
+                println!("error: {}", error);
+
+                // Reshuffle input
+                input.shuffle(&mut thread_rng());
+            }
+            Ok(output) => break output,
+        }
+    };
+
+    println!("correct output: {}", output);
+
+    Ok(())
+}
+\end{lstlisting}
+
+\subsection{Personal}
+
+(This section might not be incorporated in the final thesis, but its something interesting I am keeping here for now.)
+
+I happen to be acquainted with a former NASA engineer and a current employee of Blue Origin. He is a strong proponenet of Rust being used in aerospace industry and he had the following to say about it:
+
+"The space industry has a general hesitance to adopt Rust due to perceived newness and lack of industry maturity.", however, "Rust can improve safety reliability and offer predictable performance." 
 - Spencer C. Imbleau
 
-Spencer. C. Imbleau is a member of the AeroRust group, which aims to make Rust mainstream in the aerospace industry. He pointed me towards some useful libraries which are specifically made for embedded systems. https://aerorust.org/catalogue. One particularly interesting project is Rust implemented error correction library, which does not use the standard library, and can therefore be easily integrated with FreeRTOS.
+Spencer. C. Imbleau is a member of the AeroRust group, which aims to make Rust mainstream in the aerospace industry. He pointed me towards some useful libraries which are specifically made for embedded systems. https://aerorust.org/catalogue. One particularly interesting project is Rust implemented error correction library, which does not use the standard library, and can therefore be easily integrated with FreeRTOS. \(https://docs.rs/labrador-ldpc/latest/labrador_ldpc/\)
+
+\newpage
+
+\section{Roadmap}
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Analysis of the problem} - \textit{Done}
+    \item \textbf{Research} - \textit{Done}
+    \item \textbf{Gathering references} - \textit{Mostly Done}
+    \item \textbf{Compile relevant information and research into a document (basis for the thesis)} - \textit{Mostly Done}
+    \item \textbf{Add diagrams and code snippets} - \textit{Done}
+    \item \textbf{Select fault tolerance techniques to implement} - \textit{Mostly Done}
+    \item \textbf{Get FreeRTOS working locally} - \textit{Done}
+    \item \textbf{Implement basic application using FreeRTOS} - \textit{Started}
+    \item \textbf{Implement fault tolerance application using FreeRTOS} - \textit{Not Started}
+\end{enumerate}
 
 \newpage
 \printbibliography
