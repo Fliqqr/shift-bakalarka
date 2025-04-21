@@ -1,29 +1,33 @@
-\contentsline {section}{\numberline {1}Nomenclature}{4}{}%
-\contentsline {subsection}{\numberline {1.1}Common terms}{4}{}%
-\contentsline {section}{\numberline {2}Types of faults}{4}{}%
-\contentsline {subsection}{\numberline {2.1}Transient fault}{5}{}%
-\contentsline {subsection}{\numberline {2.2}Permanent fault}{5}{}%
-\contentsline {subsection}{\numberline {2.3}Hardware faults}{5}{}%
-\contentsline {subsection}{\numberline {2.4}Development faults}{6}{}%
-\contentsline {section}{\numberline {3}Fault tolerance techniques}{7}{}%
-\contentsline {subsection}{\numberline {3.1}Single version}{7}{}%
-\contentsline {subsubsection}{\numberline {3.1.1}Modularity}{8}{}%
-\contentsline {subsubsection}{\numberline {3.1.2}Error detection}{9}{}%
-\contentsline {subsubsection}{\numberline {3.1.3}Checkpoint and restart}{10}{}%
-\contentsline {subsubsection}{\numberline {3.1.4}Considerations for single version techniques}{11}{}%
-\contentsline {subsection}{\numberline {3.2}Multi-version}{11}{}%
-\contentsline {subsubsection}{\numberline {3.2.1}Recovery blocks}{11}{}%
-\contentsline {subsubsection}{\numberline {3.2.2}N-version programming}{14}{}%
-\contentsline {subsubsection}{\numberline {3.2.3}N Self-checking programming}{16}{}%
-\contentsline {subsubsection}{\numberline {3.2.4}Considerations for multi-version programming}{16}{}%
-\contentsline {subsection}{\numberline {3.3}Data Diversity}{17}{}%
-\contentsline {subsubsection}{\numberline {3.3.1}Failure Regions}{17}{}%
-\contentsline {subsubsection}{\numberline {3.3.2}Data Reexpression}{17}{}%
-\contentsline {subsection}{\numberline {3.4}Miscellaneous}{18}{}%
-\contentsline {section}{\numberline {4}Motivation for Rust}{19}{}%
-\contentsline {subsection}{\numberline {4.1}Safe by design}{19}{}%
-\contentsline {subsection}{\numberline {4.2}Robust error handling}{19}{}%
-\contentsline {subsection}{\numberline {4.3}Macro system}{20}{}%
-\contentsline {subsection}{\numberline {4.4}Low-level control and C integration}{20}{}%
-\contentsline {section}{\numberline {5}Implementation}{21}{}%
-\contentsline {section}{\numberline {6}Roadmap}{22}{}%
+\contentsline {section}{\numberline {1}Nomenclature}{5}{}%
+\contentsline {subsection}{\numberline {1.1}Common terms}{5}{}%
+\contentsline {section}{\numberline {2}Types of faults}{5}{}%
+\contentsline {subsection}{\numberline {2.1}Transient fault}{6}{}%
+\contentsline {subsection}{\numberline {2.2}Permanent fault}{6}{}%
+\contentsline {subsection}{\numberline {2.3}Hardware faults}{6}{}%
+\contentsline {subsection}{\numberline {2.4}Development faults}{7}{}%
+\contentsline {section}{\numberline {3}Fault tolerance techniques}{8}{}%
+\contentsline {subsection}{\numberline {3.1}Single version}{8}{}%
+\contentsline {subsubsection}{\numberline {3.1.1}Modularity}{9}{}%
+\contentsline {subsubsection}{\numberline {3.1.2}Error detection}{10}{}%
+\contentsline {subsubsection}{\numberline {3.1.3}Checkpoint and restart}{11}{}%
+\contentsline {subsubsection}{\numberline {3.1.4}Considerations for single version techniques}{12}{}%
+\contentsline {subsection}{\numberline {3.2}Multi-version}{12}{}%
+\contentsline {subsubsection}{\numberline {3.2.1}Recovery blocks}{12}{}%
+\contentsline {subsubsection}{\numberline {3.2.2}N-version programming}{15}{}%
+\contentsline {subsubsection}{\numberline {3.2.3}N Self-checking programming}{17}{}%
+\contentsline {subsubsection}{\numberline {3.2.4}Considerations for multi-version programming}{17}{}%
+\contentsline {subsection}{\numberline {3.3}Data Diversity}{18}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}Failure Regions}{18}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}Data Reexpression}{18}{}%
+\contentsline {subsection}{\numberline {3.4}Miscellaneous}{19}{}%
+\contentsline {section}{\numberline {4}Motivation for Rust}{20}{}%
+\contentsline {subsection}{\numberline {4.1}Safe by design}{20}{}%
+\contentsline {subsection}{\numberline {4.2}Robust error handling}{20}{}%
+\contentsline {subsection}{\numberline {4.3}Macro system}{21}{}%
+\contentsline {subsection}{\numberline {4.4}Low-level control and C integration}{21}{}%
+\contentsline {section}{\numberline {5}Implementation}{22}{}%
+\contentsline {subsubsection}{\numberline {5.0.1}FreeRTOS integration}{22}{}%
+\contentsline {subsubsection}{\numberline {5.0.2}Checkpoint and restart}{22}{}%
+\contentsline {subsubsection}{\numberline {5.0.3}CFCSS}{22}{}%
+\contentsline {subsubsection}{\numberline {5.0.4}Multiversion}{22}{}%
+\contentsline {section}{\numberline {6}Roadmap}{23}{}%

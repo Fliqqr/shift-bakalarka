@@ -1,13 +1,13 @@
 # Fdb version 4
-["biber docs"] 1745227291.38692 "docs.bcf" "docs.bbl" "docs" 1745229362.02658 0
-  "docs.bcf" 1745229361.97412 109891 c9934c64050b5f7492c575442ad280b2 "pdflatex"
+["biber docs"] 1745227291.38692 "docs.bcf" "docs.bbl" "docs" 1745234386.35423 0
+  "docs.bcf" 1745234386.30202 109891 c9934c64050b5f7492c575442ad280b2 "pdflatex"
   "sources.bib" 1745227242.70219 6894 44f624291ebfce375330867375cbb013 ""
   (generated)
   "docs.bbl"
   "docs.blg"
   (rewritten before read)
-["pdflatex"] 1745229358.14828 "/home/fliqqr/Documents/shift-bakalarka/docs.tex" "docs.pdf" "docs" 1745229362.02682 0
-  "/home/fliqqr/Documents/shift-bakalarka/docs.tex" 1745229354.07089 31796 7c1faf289e05bf454668f10043c4952b ""
+["pdflatex"] 1745234382.44115 "/home/fliqqr/Documents/shift-bakalarka/docs.tex" "docs.pdf" "docs" 1745234386.3545 0
+  "/home/fliqqr/Documents/shift-bakalarka/docs.tex" 1745234374.37553 31926 2c7c4b79d4690460c88c2f2136bbb1e1 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1742685315 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm" 1742685315 1328 c834bbb027764024c09d3d2bf908b5f0 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm" 1742685315 1324 c910af8c371558dc20f2d7822f66fe64 ""
@@ -96,11 +96,11 @@
   "diagrams/n_version_prog/n_version_prog.png" 1745221982.74459 212813 707b8b489c237fbfcdbb2206f6a1a081 ""
   "diagrams/recovery_blocks/recovery_blocks_01.png" 1745221982.74459 240913 3a8b65eff44ab412584bf31a1b9d7f63 ""
   "diagrams/stats/piechart.png" 1745221982.74792 337297 43458abde523b16060b93c74693b4c3b ""
-  "docs.aux" 1745229361.97412 7184 1f359ab210474799753ba22039b12af1 "pdflatex"
+  "docs.aux" 1745234386.29869 7642 57418d1e17535824641e532a84e9cc9d "pdflatex"
   "docs.bbl" 1745227291.99489 21476 33a1d6ad81a1c4e3a0d896e78b08b6ff "biber docs"
-  "docs.run.xml" 1745229361.97412 2308 d68f10476f718ca130bc88304e6a73c3 "pdflatex"
-  "docs.tex" 1745229354.07089 31796 7c1faf289e05bf454668f10043c4952b ""
-  "docs.toc" 1745229361.97412 2080 3b9a584ed668043e49935ecc23b32925 "pdflatex"
+  "docs.run.xml" 1745234386.30202 2308 d68f10476f718ca130bc88304e6a73c3 "pdflatex"
+  "docs.tex" 1745234374.37553 31926 2c7c4b79d4690460c88c2f2136bbb1e1 ""
+  "docs.toc" 1745234386.30202 2372 5b5232eb7760b92539f6fa2c1213cd0a "pdflatex"
   "front_page.pdf" 1745221982.75792 40613 bcad024872fe407b9907f14d5514b137 ""
   "listings-rust.sty" 1745221982.75792 12270 7c444cbfed7aa42b3ddcd0885e4a539c ""
   (generated)
