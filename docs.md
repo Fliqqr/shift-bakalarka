@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage[
-    backend=biber,
-    style=alphabetic,
+backend=biber,
+style=alphabetic,
 ]{biblatex}
 \addbibresource{sources.bib}
 
@@ -29,17 +29,21 @@ _This paper will aim to analyze various commonly implemented fault-tolerance met
 For the sake of consitency in the nomenclature used in this paper, we will be referencing the naming conventions and definitions as outlined by [A. Avizienis](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1335465). \cite{1335465} Below is a listing of the most crucial terms used in this paper and their definitions.
 
 ### Failure
-Failure is an event that occurs when the delivered service deviates from correct service. A service fails either because it does not comply with the functional specification, or because this specification did not adequately describe the system function. A service failure is a transition from correct service to incorrect service, i.e., to not implementing the system function. 
+
+Failure is an event that occurs when the delivered service deviates from correct service. A service fails either because it does not comply with the functional specification, or because this specification did not adequately describe the system function. A service failure is a transition from correct service to incorrect service, i.e., to not implementing the system function.
 
 ### Error
+
 Error is a deviation of the service from its correct state. It is a part of the system's state that may lead to service failure. Errors are the result of issues within the software, an example might be the lack of input sanitization, possibly leading to unexpected values as input.
 
 ### Fault
+
 Fault is the actual or hypothesized cause of a error. Faults are usually considered dormant until manifested, causing an error. An example of a fault might be hardware issue causing an I/O device to send corrupted data as input. If the software is not designed to deal with incorrect input this would lead to an internal error, possibly causing a service failure.
 
 Faults can be further split into various categories, the ones mostly relevant to use are **external faults** which originate from outside the system boundaries and propagate into the system. Which also includes **natural faults** that are caused by natural phenomena without human particiaption. These faults can the hardware and the software, which is why we can further classify them as **hardware faults** and **software faults**.
 
 ### Fault tolerance
+
 Is the ability to avoid service failures in the presence of faults.
 
 # 1. Types of faults
@@ -155,3 +159,226 @@ The primary challenge associated with multi-version programming is the significa
 To achieve effective multi-version programming, each version must be carefully designed to execute the same task while incorporating distinct failure mechanisms. Ensuring that no two versions fail in the exact same way is crucial for building reliable and fault-tolerant systems. This approach allows for enhanced redundancy, as one version can continue to operate even if another encounters a specific failure mode. While this increases the robustness of the system, it also demands rigorous validation to ensure that each version is independently reliable and that the software as a whole remains cohesive across all iterations.
 
 \end{document}
+
+As previously mentioned, one of the goals of this thesis is to implement select fault tolerance techniques using the Rust programming language. Rust is particularly well suited for software implemented fault tolerance due to its emphasis on reliability and memory safety. However, it also provides other tools that make it particularly well suited for this problem, namely the macro system. Rust's macro system allows for execution of arbitrary code at the compile time, effectively allowing us to embed fault tolerance seamlessly.
+
+\subsection{Tools}
+
+Currently, testing is being done on https://github.com/lobaro/FreeRTOS-rust which is based on https://github.com/hashmismatch/freertos.rs.
+
+FreeRTOS-Rust provides framework for both compiling and running FreeRTOS from within Rust.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-rust-build.png}
+\caption{FreeRTOS-Rust build.rs}
+\label{fig:freertos-rust-build}
+\end{figure}
+
+% \begin{figure}[hbt]
+% \centering
+% \includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-rust-main.png}
+% \caption{FreeRTOS-Rust main.rs}
+% \label{fig:freertos-rust-main}
+% \end{figure}
+
+This approach appears to be promising so far, at the very least, the provided examples compile.
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-rust-example.png}
+\caption{FreeRTOS-Rust}
+\label{fig:freertos-rust}
+\end{figure}
+
+Should Rust implementation prove to be impossible, I have also set up standard C-only FreeRTOS for testing:
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.8\textwidth]{diagrams/screenshots/freertos-c-example.png}
+\caption{FreeRTOS with standard C}
+\label{fig:freertos-c}
+\end{figure}
+
+\subsection{Ideas}
+
+\subsubsection{CFCSS}
+
+A simplified CFCSS-like system could be created with Rusts macro features. Rust macros allow for the execution of arbitrary Rust code at compile time, this could be used to generate signatures for each function branching off of the root (marked as CFCSS_start) and add validation logic to each of the functions.
+
+\begin{lstlisting}[language=Rust]
+// Checks whether the path from v0 to v1 is a valid branching
+fn validate_path(v0: u64, v1: u64) {
+...
+}
+
+#[derive(CFCSS_branch)]
+subprocess1(hash: u64) {
+let curr_hash = Y;
+
+    if (!validate_path(hash, curr_hash)) {
+        return Err("Unexpected branching detected.".into());
+    }
+    ...
+
+}
+
+#[derive(CFCSS_start)]
+fn control(flag: bool) {
+let mut hash: u64 = X;
+
+    if flag {
+        subprocess1(hash);
+    }
+
+}
+
+fn main() {
+control(true);
+}
+\end{lstlisting}
+
+\subsubsection{Checksum on data types}
+
+Another interesting thing that could be implemented using Rusts macro system is checksum protected structs. An arbitrary struct could have a "checksum" macro derived on it, which would implement an interface for safely interacting with the underlying data. This could also double as a read/write lock to ensure thread safety.
+
+\begin{lstlisting}[language=Rust] #[derive(checksum)]
+struct Point2D {
+x: i64,
+y: i64,
+}
+
+fn main() {
+let mut point = Point2D { 3.14, 2.6 };
+
+    // Performs a checksum on point before and after use,
+    // raising an error if either detects an issue
+    if let Err(e) = point.checked(|p: &Point2D| {
+        // Perform some operation with the point
+        ...
+    }) {
+        println!("Found checksum error: {}", e);
+    }
+
+    // Mutable access to checked point, if last check detects
+    // an issue restores the previous point and checksums again
+    if let Err(e) = point.checked_mut(|p: &mut Point2D| {
+        // Change the point data
+        ...
+    }) {
+        println!("Found checksum error: {}", e);
+    }
+
+}
+\end{lstlisting}
+
+\subsubsection{Acceptance testing}
+
+One major benfit of Rust is its approach to errors as value. This means we can use built-in Rust tooling to easily implements things like acceptance checks, since we can pass arbitrary error message into the acceptance check.
+
+\begin{lstlisting}[language=Rust]
+fn unsafe_process(input: u64) -> Result<u64, String> {
+if input < 5 {
+return Err("Input cannot be less than 5".into());
+}
+
+    Ok(input + 2)
+
+}
+
+fn acceptance_check(res: Result<u64, String>)
+-> Result<u64, String>
+{
+let output = match res {
+Err(error) => {
+// Handle obvious error
+return Err(format!(
+"Process failed with error: {}", error
+));
+}
+Ok(output) => output,
+};
+
+    /*
+    Perform other checks to ensure output matches
+    our criteria that might have not been tested
+    during output generation.
+    */
+    if output > 10 {
+        return Err("Output cannot be larger than 10".into());
+    }
+
+    Ok(output)
+
+}
+
+fn main() -> Result<(), String> {
+// This will execute correctly
+let output = acceptance_check(unsafe_process(6))?;
+println!("Output: {}", output);
+
+    // This will fail during initial execution
+    acceptance_check(unsafe_process(2))?;
+
+    // This will fail acceptance check
+    acceptance_check(unsafe_process(9))?;
+
+    Ok(())
+
+}
+\end{lstlisting}
+
+\subsubsection{Data reexpression in practice}
+
+Sometimes even the order of the inputs makes a difference. An edge-case might only occur only given a very specific order of inputs, so if our process does not care about the order of processed data, simple reordering can provide basic fault tolerance.
+
+\begin{lstlisting}[language=Rust]
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
+/_
+Function to process input data, this only works
+if the function does not care about the order of the input.
+_/
+fn process_data(input: &[u64]) -> Result<bool, String> {
+if input[0] == 0 {
+return Err("edge-case".into());
+}
+
+    Ok(true)
+
+}
+
+fn main() -> Result<(), String> {
+let mut input: Vec<u64> = vec![0, 1, 2];
+
+    // Keep retrying the function until it succeeds
+    let output = loop {
+        match process_data(&input) {
+            Err(error) => {
+                println!("error: {}", error);
+
+                // Reshuffle input
+                input.shuffle(&mut thread_rng());
+            }
+            Ok(output) => break output,
+        }
+    };
+
+    println!("correct output: {}", output);
+
+    Ok(())
+
+}
+\end{lstlisting}
+
+\subsection{Personal}
+
+(This section might not be incorporated in the final thesis, but its something interesting I am keeping here for now.)
+
+I happen to be acquainted with a former NASA engineer and a current employee of Blue Origin. He is a strong proponenet of Rust being used in aerospace industry and he had the following to say about it:
+
+"The space industry has a general hesitance to adopt Rust due to perceived newness and lack of industry maturity.", however, "Rust can improve safety reliability and offer predictable performance."
+
+- Spencer C. Imbleau
+
+Spencer. C. Imbleau is a member of the AeroRust group, which aims to make Rust mainstream in the aerospace industry. He pointed me towards some useful libraries which are specifically made for embedded systems. https://aerorust.org/catalogue. One particularly interesting project is Rust implemented error correction library, which does not use the standard library, and can therefore be easily integrated with FreeRTOS. \(https://docs.rs/labrador-ldpc/latest/labrador_ldpc/\)
