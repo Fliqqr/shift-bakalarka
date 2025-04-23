@@ -13,21 +13,28 @@
 \contentsline {subsubsection}{\numberline {3.1.4}Considerations for single version techniques}{12}{}%
 \contentsline {subsection}{\numberline {3.2}Multi-version}{12}{}%
 \contentsline {subsubsection}{\numberline {3.2.1}Recovery blocks}{12}{}%
-\contentsline {subsubsection}{\numberline {3.2.2}N-version programming}{15}{}%
-\contentsline {subsubsection}{\numberline {3.2.3}N Self-checking programming}{17}{}%
-\contentsline {subsubsection}{\numberline {3.2.4}Considerations for multi-version programming}{17}{}%
-\contentsline {subsection}{\numberline {3.3}Data Diversity}{18}{}%
-\contentsline {subsubsection}{\numberline {3.3.1}Failure Regions}{18}{}%
-\contentsline {subsubsection}{\numberline {3.3.2}Data Reexpression}{18}{}%
-\contentsline {subsection}{\numberline {3.4}Miscellaneous}{19}{}%
-\contentsline {section}{\numberline {4}Motivation for Rust}{20}{}%
-\contentsline {subsection}{\numberline {4.1}Safe by design}{20}{}%
-\contentsline {subsection}{\numberline {4.2}Robust error handling}{20}{}%
-\contentsline {subsection}{\numberline {4.3}Macro system}{21}{}%
-\contentsline {subsection}{\numberline {4.4}Low-level control and C integration}{21}{}%
-\contentsline {section}{\numberline {5}Implementation}{22}{}%
-\contentsline {subsubsection}{\numberline {5.0.1}FreeRTOS integration}{22}{}%
-\contentsline {subsubsection}{\numberline {5.0.2}Checkpoint and restart}{22}{}%
-\contentsline {subsubsection}{\numberline {5.0.3}CFCSS}{22}{}%
-\contentsline {subsubsection}{\numberline {5.0.4}Multiversion}{22}{}%
-\contentsline {section}{\numberline {6}Roadmap}{23}{}%
+\contentsline {subsubsection}{\numberline {3.2.2}N-version programming}{14}{}%
+\contentsline {subsubsection}{\numberline {3.2.3}N Self-checking programming}{16}{}%
+\contentsline {subsubsection}{\numberline {3.2.4}Considerations for multi-version programming}{16}{}%
+\contentsline {subsection}{\numberline {3.3}Data Diversity}{17}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}Failure Regions}{17}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}Data Reexpression}{17}{}%
+\contentsline {subsection}{\numberline {3.4}Miscellaneous}{17}{}%
+\contentsline {section}{\numberline {4}Motivation for Rust}{19}{}%
+\contentsline {subsection}{\numberline {4.1}Safe by design}{19}{}%
+\contentsline {subsection}{\numberline {4.2}Robust error handling}{19}{}%
+\contentsline {subsection}{\numberline {4.3}Macro system}{19}{}%
+\contentsline {subsection}{\numberline {4.4}Low-level control and C integration}{20}{}%
+\contentsline {section}{\numberline {5}Implementation}{21}{}%
+\contentsline {subsection}{\numberline {5.1}RISC-V}{21}{}%
+\contentsline {subsubsection}{\numberline {5.1.1}Interrupt and exception handling}{21}{}%
+\contentsline {subsection}{\numberline {5.2}FreeRTOS integration}{21}{}%
+\contentsline {subsection}{\numberline {5.3}Checkpoint and restart}{21}{}%
+\contentsline {subsection}{\numberline {5.4}CFCSS}{22}{}%
+\contentsline {subsubsection}{\numberline {5.4.1}Macro implementation}{24}{}%
+\contentsline {subsubsection}{\numberline {5.4.2}Performance impact}{25}{}%
+\contentsline {subsubsection}{\numberline {5.4.3}Considerations}{25}{}%
+\contentsline {subsection}{\numberline {5.5}Multiversion}{26}{}%
+\contentsline {section}{\numberline {6}Testing}{26}{}%
+\contentsline {subsection}{\numberline {6.1}Common errors}{26}{}%
+\contentsline {subsection}{\numberline {6.2}Fault coverage}{26}{}%

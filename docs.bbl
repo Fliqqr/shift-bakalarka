@@ -197,6 +197,33 @@
       \verb https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
       \endverb
     \endentry
+    \entry{coast:cfcss}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=9bcc0860c71e10404d2a1f78054b8208}{%
+           family={Jeffrey\bibnamedelima Goeders},
+           familyi={J\bibinitperiod\bibinitdelim G\bibinitperiod},
+           given={Benjamin\bibnamedelima James},
+           giveni={B\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{fullhash}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{fullhashraw}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{bibnamehash}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{authorbibnamehash}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{authornamehash}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{authorfullhash}{9bcc0860c71e10404d2a1f78054b8208}
+      \strng{authorfullhashraw}{9bcc0860c71e10404d2a1f78054b8208}
+      \field{labelalpha}{Jef}
+      \field{sortinit}{J}
+      \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
+      \field{labelnamesource}{author}
+      \verb{urlraw}
+      \verb https://coast-compiler.readthedocs.io/en/latest/cfcss.html
+      \endverb
+      \verb{url}
+      \verb https://coast-compiler.readthedocs.io/en/latest/cfcss.html
+      \endverb
+    \endentry
     \entry{nasa:datadiversity}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=986e58edeec37e544fb30b6bf7827a92}{%

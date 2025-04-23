@@ -382,3 +382,109 @@ I happen to be acquainted with a former NASA engineer and a current employee of 
 - Spencer C. Imbleau
 
 Spencer. C. Imbleau is a member of the AeroRust group, which aims to make Rust mainstream in the aerospace industry. He pointed me towards some useful libraries which are specifically made for embedded systems. https://aerorust.org/catalogue. One particularly interesting project is Rust implemented error correction library, which does not use the standard library, and can therefore be easily integrated with FreeRTOS. \(https://docs.rs/labrador-ldpc/latest/labrador_ldpc/\)
+
+\begin{lstlisting}[language=Rust]
+async fn version<T, U>(ver_id: u32, input: T) -> U {
+...
+}
+
+fn selection<U>(results: Vec<U>) -> U {
+...
+}
+
+fn main() {
+let input = 42;
+
+    let results = futures::join!(
+        version(1, input),
+        version(2, input),
+        version(3, input)
+    );
+
+    let correct_result = selection(results);
+
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Rust]
+// Exectutes version based on the version ID
+async fn version<T, U>(ver_id: u32, input: T) -> U {
+...
+}
+
+// Validates the version output based on the input
+fn acceptance_test<T, U>(input: T, output: U) -> Result<U> {
+...
+}
+
+// Selects a different version based on the error
+// received from the acceptance test
+fn version_switch<E>(error: E) -> u32 {
+...
+}
+
+fn main() {
+/_
+In a lot of cases, the input will be more complex
+than just a single number, so before executing the version
+we would create a "data checkpoint" that would be restored
+before trying a different version.
+_/
+let input = 42;
+let mut ver_id = 1;
+
+    let correct_result = loop {
+        match acceptance_test(input, version(ver_id, input)) {
+            Ok(output) => break output,
+            Err(error) => ver_id = version_switch(error),
+        }
+
+        if ver_id > MAX_VER {
+            panic!("No version executed successfully");
+        }
+    }
+
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Rust]
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
+    /_
+    Function to process input data, this only works
+    if the function does not care about the order of the input.
+    _/
+    fn process_data(input: &[u64]) -> Result<bool, String> {
+    if input[0] == 0 {
+    return Err("edge-case".into());
+    }
+
+        Ok(true)
+
+    }
+
+    fn main() -> Result<(), String> {
+    let mut input: Vec<u64> = vec![0, 1, 2];
+
+        // Keep retrying the function until it succeeds
+        let output = loop {
+            match process_data(&input) {
+                Err(error) => {
+                    println!("error: {}", error);
+
+                    // Reshuffle input
+                    input.shuffle(&mut thread_rng());
+                }
+                Ok(output) => break output,
+            }
+        };
+
+        println!("correct output: {}", output);
+
+        Ok(())
+
+    }
+    \end{lstlisting}
+
+CFCSS is a purely software fault-tolerance method which ensures correct control flow a program. It does so by constructing a program graph where nodes are blocks of instructions containing no branch or jump instructions, and edges between nodes represent the branching instructions connecting nodes together. At the start of the program, a runtime signature ({$S}) is generated, which gets updated as the program runs. Each node is assigned a pre-computed signature ({$s_n}) and signature difference ({$d_n}). Additional instructions are inserted at the start and end of the instruction block.
