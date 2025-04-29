@@ -2390,11 +2390,10 @@
     <bcf:citekey order="16" intorder="1">nasa:datadiversity</bcf:citekey>
     <bcf:citekey order="17" intorder="1">994926</bcf:citekey>
     <bcf:citekey order="18" intorder="1">rust_book:ownership</bcf:citekey>
-    <bcf:citekey order="19" intorder="1">rust_book:panic</bcf:citekey>
-    <bcf:citekey order="20" intorder="1">rust_book:result</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">rust_book:error_handling</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">coast:cfcss</bcf:citekey>
     <bcf:citekey order="21" intorder="1">coast:cfcss</bcf:citekey>
     <bcf:citekey order="22" intorder="1">coast:cfcss</bcf:citekey>
-    <bcf:citekey order="23" intorder="1">coast:cfcss</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="anyt">

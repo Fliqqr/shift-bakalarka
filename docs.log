@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.21)  23 APR 2025 15:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.21)  29 APR 2025 16:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -537,7 +537,7 @@ File: diagrams/stats/piechart.png Graphic file (type png)
 Package pdftex.def Info: diagrams/stats/piechart.png  used on input line 106.
 (pdftex.def)             Requested size: 272.99881pt x 194.33661pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 111--112
+Underfull \hbox (badness 10000) in paragraph at lines 110--111
 
  []
 
@@ -549,12 +549,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 111--112
 <diagrams/modularity/horizontal.png, id=53, 3854.4pt x 2337.73375pt>
 File: diagrams/modularity/horizontal.png Graphic file (type png)
 <use diagrams/modularity/horizontal.png>
-Package pdftex.def Info: diagrams/modularity/horizontal.png  used on input line 134.
+Package pdftex.def Info: diagrams/modularity/horizontal.png  used on input line 133.
 (pdftex.def)             Requested size: 272.99881pt x 165.54863pt.
 <diagrams/modularity/vertical.png, id=54, 3854.4pt x 3092.55376pt>
 File: diagrams/modularity/vertical.png Graphic file (type png)
 <use diagrams/modularity/vertical.png>
-Package pdftex.def Info: diagrams/modularity/vertical.png  used on input line 141.
+Package pdftex.def Info: diagrams/modularity/vertical.png  used on input line 140.
 (pdftex.def)             Requested size: 272.99881pt x 219.00188pt.
 
 
@@ -564,7 +564,7 @@ Package pdftex.def Info: diagrams/modularity/vertical.png  used on input line 14
 <diagrams/checkpoint/checkpoint.png, id=63, 3854.4pt x 3609.485pt>
 File: diagrams/checkpoint/checkpoint.png Graphic file (type png)
 <use diagrams/checkpoint/checkpoint.png>
-Package pdftex.def Info: diagrams/checkpoint/checkpoint.png  used on input line 168.
+Package pdftex.def Info: diagrams/checkpoint/checkpoint.png  used on input line 167.
 (pdftex.def)             Requested size: 312.00119pt x 292.12434pt.
 
 
@@ -574,7 +574,7 @@ Package pdftex.def Info: diagrams/checkpoint/checkpoint.png  used on input line 
 <diagrams/recovery_blocks/recovery_blocks_01.png, id=71, 3134.71124pt x 3854.4pt>
 File: diagrams/recovery_blocks/recovery_blocks_01.png Graphic file (type png)
 <use diagrams/recovery_blocks/recovery_blocks_01.png>
-Package pdftex.def Info: diagrams/recovery_blocks/recovery_blocks_01.png  used on input line 192.
+Package pdftex.def Info: diagrams/recovery_blocks/recovery_blocks_01.png  used on input line 191.
 (pdftex.def)             Requested size: 350.99762pt x 431.57224pt.
 
 
@@ -582,7 +582,7 @@ Package pdftex.def Info: diagrams/recovery_blocks/recovery_blocks_01.png  used o
 <diagrams/n_version_prog/n_version_prog.png, id=77, 3854.4pt x 2246.3925pt>
 File: diagrams/n_version_prog/n_version_prog.png Graphic file (type png)
 <use diagrams/n_version_prog/n_version_prog.png>
-Package pdftex.def Info: diagrams/n_version_prog/n_version_prog.png  used on input line 215.
+Package pdftex.def Info: diagrams/n_version_prog/n_version_prog.png  used on input line 214.
 (pdftex.def)             Requested size: 350.99762pt x 204.566pt.
 
 
@@ -594,7 +594,7 @@ Package pdftex.def Info: diagrams/n_version_prog/n_version_prog.png  used on inp
 <diagrams/data_div/reexpress.png, id=88, 3432.825pt x 3854.4pt>
 File: diagrams/data_div/reexpress.png Graphic file (type png)
 <use diagrams/data_div/reexpress.png>
-Package pdftex.def Info: diagrams/data_div/reexpress.png  used on input line 256.
+Package pdftex.def Info: diagrams/data_div/reexpress.png  used on input line 255.
 (pdftex.def)             Requested size: 272.99881pt x 306.47627pt.
 
 
@@ -607,42 +607,64 @@ Package pdftex.def Info: diagrams/data_div/reexpress.png  used on input line 256
 [20]
 
 [21]
-<diagrams/cfcss/basic.png, id=110, 1028.84375pt x 515.9275pt>
-File: diagrams/cfcss/basic.png Graphic file (type png)
-<use diagrams/cfcss/basic.png>
-Package pdftex.def Info: diagrams/cfcss/basic.png  used on input line 355.
-(pdftex.def)             Requested size: 390.0pt x 195.57426pt.
 
+[22
 
-[22 <./diagrams/cfcss/basic.png>]
-<diagrams/cfcss/adjuster.png, id=120, 560.0925pt x 509.905pt>
-File: diagrams/cfcss/adjuster.png Graphic file (type png)
-<use diagrams/cfcss/adjuster.png>
-Package pdftex.def Info: diagrams/cfcss/adjuster.png  used on input line 376.
-(pdftex.def)             Requested size: 234.00238pt x 213.03824pt.
+]
 
-
-[23 <./diagrams/cfcss/adjuster.png>]
+[23]
 
 [24]
 
 [25]
+<diagrams/cfcss/basic.png, id=123, 1028.84375pt x 515.9275pt>
+File: diagrams/cfcss/basic.png Graphic file (type png)
+<use diagrams/cfcss/basic.png>
+Package pdftex.def Info: diagrams/cfcss/basic.png  used on input line 449.
+(pdftex.def)             Requested size: 390.0pt x 195.57426pt.
 
-[26]
-Overfull \hbox (4.59964pt too wide) in paragraph at lines 449--449
+
+[26
+
+ <./diagrams/cfcss/basic.png>]
+<diagrams/cfcss/adjuster.png, id=133, 560.0925pt x 509.905pt>
+File: diagrams/cfcss/adjuster.png Graphic file (type png)
+<use diagrams/cfcss/adjuster.png>
+Package pdftex.def Info: diagrams/cfcss/adjuster.png  used on input line 471.
+(pdftex.def)             Requested size: 234.00238pt x 213.03824pt.
+
+
+[27 <./diagrams/cfcss/adjuster.png>]
+
+[28]
+
+[29]
+
+[30
+
+]
+
+[31]
+
+[32]
+
+[33
+
+]
+Overfull \hbox (4.59964pt too wide) in paragraph at lines 602--602
 \OT1/cmr/m/n/12 soft-ware us-ing the ant colony op-ti-miza-tion''. In: \OT1/cmr/m/it/12 Jour-nal of Physics:
  []
 
 
-Overfull \hbox (6.68912pt too wide) in paragraph at lines 449--449
+Overfull \hbox (6.68912pt too wide) in paragraph at lines 602--602
 []\OT1/cmr/m/n/12 Benjamin James Jef-frey Goed-ers. \OT1/cmr/m/sc/12 url\OT1/cmr/m/n/12 : $\OT1/cmtt/m/n/12 https : / / coast -[] compiler .
  []
 
 
 
-[27]
+[34]
 
-[28] (./docs.aux)
+[35] (./docs.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -652,18 +674,18 @@ Package logreq Info: Writing requests to 'docs.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 14164 strings out of 475171
- 253068 string characters out of 5767095
- 1140720 words of memory out of 5000000
- 37048 multiletter control sequences out of 15000+600000
+ 14192 strings out of 475171
+ 253450 string characters out of 5767095
+ 1172974 words of memory out of 5000000
+ 37076 multiletter control sequences out of 15000+600000
  564852 words of font info for 57 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  68i,17n,81p,7929b,2353s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmitt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on docs.pdf (28 pages, 1645838 bytes).
+Output written on docs.pdf (35 pages, 1661492 bytes).
 PDF statistics:
- 207 PDF objects out of 1000 (max. 8388607)
- 118 compressed objects within 2 object streams
+ 229 PDF objects out of 1000 (max. 8388607)
+ 133 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  61 words of extra memory for PDF output out of 10000 (max. 10000000)
 

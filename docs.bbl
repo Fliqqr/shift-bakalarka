@@ -139,7 +139,7 @@
       \verb https://doc.rust-lang.org/1.8.0/book/ownership.html
       \endverb
     \endentry
-    \entry{rust_book:panic}{misc}{}{}
+    \entry{rust_book:error_handling}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=efe8557e0225a35ec333750ff2e851fa}{%
            family={Foundation},
@@ -162,39 +162,10 @@
       \field{extraalpha}{2}
       \field{labelnamesource}{author}
       \verb{urlraw}
-      \verb https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html
+      \verb https://doc.rust-lang.org/book/ch09-00-error-handling.html
       \endverb
       \verb{url}
-      \verb https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html
-      \endverb
-    \endentry
-    \entry{rust_book:result}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=efe8557e0225a35ec333750ff2e851fa}{%
-           family={Foundation},
-           familyi={F\bibinitperiod},
-           given={The\bibnamedelima Rust},
-           giveni={T\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
-      }
-      \strng{namehash}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{fullhash}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{fullhashraw}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{bibnamehash}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{authorbibnamehash}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{authornamehash}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{authorfullhash}{efe8557e0225a35ec333750ff2e851fa}
-      \strng{authorfullhashraw}{efe8557e0225a35ec333750ff2e851fa}
-      \field{extraname}{3}
-      \field{labelalpha}{Fou}
-      \field{sortinit}{F}
-      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
-      \field{extraalpha}{3}
-      \field{labelnamesource}{author}
-      \verb{urlraw}
-      \verb https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
-      \endverb
-      \verb{url}
-      \verb https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
+      \verb https://doc.rust-lang.org/book/ch09-00-error-handling.html
       \endverb
     \endentry
     \entry{coast:cfcss}{misc}{}{}
