@@ -1,0 +1,31 @@
+\subsection{Multiversion}
+
+The implemented multiversion techniques are clumination of most of the techniques discuessed so far.
+
+\subsubsection{Recovery blocks}
+
+Recover blocks have been implemented by taking advantage of the checkpoint system. By wrapping each call to a different version function in a checkpoint context we ensure that the function will return even in case of an error. We can then check the return value of the checkpoint block to determine if the version executed successfully. As seen in Figure \ref{fig:recover_blocks}, if the version returns successfully, we immediatelly return the value, otherwise we try another version. The checkpoint is set to 0 retries, meaning each one of the versions (fib\_v1, fib\_v2, fib\_v3) will only be tried once.
+
+\begin{figure}[!h]
+\begin{lstlisting}[language=Rust]
+pub fn fib_rec_blocks(x: u8) -> Result<u32, &'static str> {
+    // Version 1
+    if let Ok(res) = checkpoint(0, || fib_v1(x)) {
+        return Ok(res);
+    }
+    // Version 2
+    if let Ok(res) = checkpoint(0, || fib_v2(x)) {
+        return Ok(res);
+    }
+    // Version 3
+    if let Ok(res) = checkpoint(0, || fib_v3(x)) {
+        return Ok(res);
+    }
+    Err("Versions exhausted")
+}
+\end{lstlisting}
+\caption{Rust - Recovery blocks}
+\label{fig:recover_blocks}
+\end{figure}
+
+Important thing to mention is the lack of any verification of the result. In the case of recovery blocks, we only care about the function executing without obvious errors. The return value could be corrupted by an undetectable bit flip somewhere in the function variables. Recovery blocks alone does not deal with this issue.

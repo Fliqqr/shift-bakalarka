@@ -44,218 +44,23 @@
 \begin{document}
 
 \includepdf[pages={1}]{front_page.pdf}
-
-% \maketitle
-
-\newpage
-
-\begin{abstract}
-With the increasing demand for high-performance embedded software comes the inevitable, difficult task of ensuring fault-free functioning of ever-more complex systems. The increased complexity, both in terms of hardware components and software features, increases the number of failure points where errors can manifest.
-
-Errors can be caused by both external factors beyond our control such as radiation in space, but also as a result of human error while designing the software. Due to the incredibly complex nature of this problem, it is unlikely that we will be designing completely error-free software and hardware in the near future. This simple fact makes fault-tolerance an important aspect of software design, especially when designing critical systems whose failure could endanger human life. However, as with most things, fault-tolerance and reliability is a trade-off, which usually comes at the cost of performance and development time.
-
-Historically, speciallized hardware was the go-to choice for implementing fault tolerance, specifically by hardening and or duplicating the components. This approach requires designing and producing non-standard computure components, exponentially increasing the development cost. Lately, a more economical solution began gaining traction for non-critical missions. Namely, using off-the-shelf components without specialized hardening, while using software reduncies to implement fault tolerance.
-
-This thesis will aim to analyze various common software-implemented fault-tolerance methods. We will look at the benefits and drawbacks of the utilized methods, as well as construct a working demo based on FreeRTOS running on RISC-V core that implements and tests the effectiveness of some selected methods using the Rust programming language.
-\end{abstract}
-
 \newpage
 
 \tableofcontents
-
 \newpage
 
-\section{Nomenclature}
+\input{src/introduction}
+\newpage
 
-\subsection{Common terms}
+\input{src/nomenclature}
+\input{src/types_of_faults}
 
-For the sake of consistency in the terms used in this document, we will refer to the naming conventions and definitions as outlined in \cite{1335465}. Below are the definitions of the most crucial terms used. \\
+\clearpage
+\section{Analysis}
 
-\textbf{Failure} is an event that occurs when the delivered service deviates from correct service. A service fails either because it does not comply with the functional specification, or because this specification did not adequately describe the system function. A service failure is a transition from correct service to incorrect service, i.e., to not implementing the system function \cite{1335465}. \\
-
-\textbf{Error} is a deviation of the service from its correct state. It is a part of the system's state that may lead to service failure \cite{1335465}. Errors are the observable result of issues within the software and or hardware. \\
-
-\textbf{Fault} is the actual or hypothesized cause of an error. Faults are usually considered dormant until manifested, causing an error \cite{1335465}. An example of a fault might be hardware issue causing an I/O device to send corrupted data as input. If the software is not designed to deal with incorrect input this would lead to an internal error, possibly causing a service failure. \\
-
-\textbf{Fault tolerance} is the ability to avoid service failures in the presence of faults. 
-
-\section{Types of faults}
-
-In order to be able to talk about fault tolerance, we first need to understand the various types of faults that we might encounter. This list is not exhaustive and only covers fault types relevant to this thesis, for more complete list see \cite{1335465}. It is also important to understand two different classifications are not always mutually exclusive. As we will see later on, a solid fault, for example, can be caused during development, but can also be a product of external factors.
-
-Faults can be further split into various categories, the ones mostly relevant to us are \textbf{external faults} which originate from outside the system boundaries and propagate into the system. Which also includes \textbf{natural faults} that are caused by natural phenomena without human participation. These faults can the hardware and the software, which is why we can further classify them as \textbf{hardware faults} and \textbf{software faults} \cite{1335465}. \\
-
-\subsection{Transient fault} is a temporary fault which results in an error. Transient faults are usually caused by random, external events (e.g. radiation) interfering with the system. A key characteristic of transient faults is the inability to accurately reproduce it, since the cause is external to the system. Retrying the same process multiple times is usually enough to deal with a transient fault, since it is extremely unlikely a transient fault will occur repeatedly within the same process at successive time intervals. If a fault persists across multiple attempts, it is possible we are dealing with a solid fault. \\
-
-\subsection{Permanent fault} also known as solid fault, is a lasting fault within the system that requires maintenance to remove. This could come in various forms, such as damaged hardware, corrupted memory or missing code. When dealing with a solid fault, retrying the same process is usually not enough as the same error will keep reoccurring. This approach requires alternatives and fallbacks within the system, which is outlined in more detail in section \ref{multi}. \\
-
-\subsection{Hardware faults}
-
-Hardware errors are caused by external factors beyond our control as software developers. They are usually caused by environmental influences, such as cosmic radiation in space, electro-magnetic fields or adverse weather conditions.
-
-One of the most common hardware errors is memory corruption, which can appear in many forms and result from a wide range of causes. For instance, radiation exposure in space can cause single-event upsets (SEUs), flipping individual bits in memory and altering data unpredictably. Similarly, physical damage to storage media, such as hard drives or SSDs, might corrupt specific regions of the file system, making certain data inaccessible or incorrect.
-
-Memory corruption is not always catastrophic. While it can result in complete system failure and unrecoverable states, it is just as likely to manifest as small, hard-to-detect errors. These subtle corruptions might not immediately disrupt the software's functioning but can lead to unpredictable behavior over time.
-
-\subsection{Development faults}
-
-Development faults is a category which includes all the various faults whose causes are introduced during software development stage. According to research conducted by NASA, majority of errors stem from faults within the code and logic of the afflicted software, followed closely by faults in data \cite{nasa:stats}. Both of these sources are under the control of the software developers, and therefore are prime target of software implemented fault tolerance techniques.
-
-\begin{figure}[hbt]
-    \centering
-    \includegraphics[width=0.7\textwidth]{diagrams/stats/piechart.png}
-    \caption{Causes of errors \cite{nasa:stats}}
-\end{figure}
-
-To ensure that software remains robust and as free of errors as possible, there are several effective strategies. One promising approach we will look at is the use of memory-safe programming languages, specifically Rust. Rust is a modern language that has gained traction for its safety features, particularly in system programming and embedded applications. It ensures high performance through zero-cost abstractions and introduces a memory ownership model, which reduces memory-related errors such as null pointer dereferencing and data races. This model makes Rust particularly well-suited for low-level and resource-constrained environments, where reliable memory management is crucial. (https://docs.rust-embedded.org/book/) \\
-
-\section{Fault tolerance techniques}
-
-\subsection{Single version} \label{single}
-
-Single version is a category of techniques which focus on creating a singular, robust implementation of software by integrating safety checks and redundancies directly into the software design process.
-
-This technique emphasizes the detection of errors within the software and the ability to recover from them. Error detection typically involves monitoring the system for unexpected behaviors or inconsistencies, which could signal the presence of a fault. Recovery mechanisms then act to mitigate the effects of these faults.
-
-Handling an error can be done in various ways. Most common would be to backtrack to a saved checkpoint and retry the part of the application where an error was discovered in the hopes of getting the correct result on the subsequent retries. This usually works well with transient faults, but it is likely to fail in the presence of a solid fault \cite{1402092}. 
-
-Drawbacks of single version techniques are primarily the lack of alternatives and fallbacks, should the version fail. Single-version techniques heavily rely on error detection and recovery, which might not always work in practice. The reason single-version techniques are viable is an observation that transient errors are way more common than solid errors \cite{1676899}, meaning that single-version is sometimes enough for noncritical parts of the system.
-
-\subsubsection{Modularity}
-
-Perhaps the simplest way we can create a more resilient software is to structure it into independent modules. Each module should handle one task and, when possible, not directly rely upon any other modules for its functionality, or be relied upon by other modules.
-
-A technique commonly utilized to achieve modularity is partitioning, which can be divided into horizontal and vertical partitioning. Horizontal partitioning aims to split the software into independent structural branches communicating through interfaces. 
-Vertical partitioning splits the software in a top-down fashion, where higher level modules are tasked with control logic, while lower level modules do most of the processing \cite{nasa:sft}.
-
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.7\textwidth]{modularity/horizontal.png}
-    \caption{Horizontal partitioning}
-    \label{fig:mod_hor}
-\end{figure}
-
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.7\textwidth]{modularity/vertical.png}
-    \caption{Vertical partitioning}
-    \label{fig:mod_ver}
-\end{figure}
-
-Benefit of partitioning is the ability of software to isolate errors. Provided the software is correctly structured, an error occurring in a single module should not propagate to other modules. Meaning we can use modularity as a way to pinpoint the erroneous parts of software and attempt recovery. If recovery is not possible, the software should still be able to partially function, given that other parts of the software are not influenced by the fault. In most situations, partial functioning of a software is preferable to a complete shutdown.
-
-\subsubsection{Error detection}
-
-Fault-tolerant single-version application should meet two main criteria: self-protection and self-checking. Self-protection means that the application should be able to protect itself from external corruption by detecting errors in information being passed into the application. Self-checking means that the application component must be able to detect errors within itself and prevent propagation of these errors into other components. These two traits combined can be together considered as the ability of "error detection".
-
-Error detection covers a wide range of techniques used to locate errors and mitigate them. Some common approaches include:
-
-a) checksums and error correction codes (ECC), which embed additional metadata with the actual data in order to verify integrity and attempt to correct corrupted data. This approach allows for some degree of memory corruption mitigation but comes at the cost of memory overhead and additional processing per data-chunk which uses checksum or ECCs.
-
-b) assertion and runtime checks, which perform independent checks on the data during execution which ensures the data matches the expected outcomes at certain checkpoints. This approach also carries with it the additional processing overhead without guarantees that we will be able to catch all errors.
-
-c) watchdog timers, whose main purpose is to catch deadlock states by giving a task a certain amount of time to execute before aborting it.
-
-Error detection is a crucial aspect of single-version application, since we have no alternate version to fall back upon.
-
-\subsubsection{Checkpoint and restart}
-
-Checkpoint and restart could be considered the basis of some of the more advanced fault tolerance techniques. It involves creating a data checkpoint which the software can be rolled back to before the execution of a process. At the end of the execution, an acceptance check is performed on the process output, if an error is detected rollback is initiated and the process is restarted.
-
-\begin{figure}[hbt]
-    \centering
-    \includegraphics[width=0.8\textwidth]{diagrams/checkpoint/checkpoint.png}
-    \caption{Checkpoint and restart}
-    \label{fig:checkpoint}
-\end{figure}
-
-\subsubsection{Considerations for single version techniques}
-
-Single version fault tolerance techniques are largely easier to develop when compared to the ones discussed in the following section. With this relative simplicity comes the drawback of being ill-suited for some situations. While these techniques should work well for transient faults that are unlikely to reoccur, a single version fault tolerant system will fail when attempting to deal with persistent faults. Even if an error is successfully detected, single version techniques provide no clear way of dealing with errors that stem from, or are heavily influenced by the design of the system. As an example, if the memory region containing a critical function has been permanently damaged, it matters not how many times we attempt to rerun said function, it will always cause an error. For this reason, single version techniques should be reserved for parts of software which are not mission critical and allow system to function even in their absence.
-
-In order to effectively deal with solid faults, we need to consider multi-version techniques covered in the following section. A lot of these techniques take inspiration from single version techniques, or even directly build off of them.
-
-\subsection{Multi-version} \label{multi}
-
-Multi-version techniques build on the idea of multiple software versions which all meet the same specifications. These versions are interchangeable in terms of their output, but each version executes differently from the rest, ensuring that no two version share the same failure regions.
-Multiple versions of the same software are executed either in sequence or in parallel, each utilizing different error detection and recovery methods, to have the highest probability of at least one completing the task successfully.
-
-\subsubsection{Recovery blocks}
-
-Recovery blocks is a simple form of multi-version programming, expanding upon the idea of "checkpoint and restart". Unlike its single version counterpart, however, recovery blocks does not re-execute the same code again, but instead chooses a different version to try next.
-
-A key advantage of the recovery blocks technique is that, in most cases, the initial version will execute successfully, allowing subsequent versions to prioritize redundancy and safety over performance. This enables the design of backup versions with gradually reduced performance requirements, ensuring robust fallback options without excessive resource consumption.
-
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.9\textwidth]{recovery_blocks/recovery_blocks_01.png}
-    \caption{Recovery Blocks}
-    \label{fig:rec_blo}
-\end{figure}
-
-\break
-
-Since errors are relatively rare compared to normal execution, this approach often achieves an optimal balance of performance and reliability. By prioritizing efficiency in the primary execution path while incorporating progressively resilient alternatives, recovery blocks can provide dependable fault tolerance without compromising system performance in typical operating conditions. This balance makes recovery blocks a practical solution for systems requiring high availability and reliability.
-
-A consideration for recovery blocks is the utilization of a single shared acceptance check for all the versions. This means that the acceptance check must be implementation agnostic and only consider the inputs and outputs of the version. Although this means easier development and potentially less opportunities for faults given less software design, it also fails to take advantage of version-specialized ways errors could be detected in theory.
-
-A considerable drawback of recovery blocks approach is its inherent complexity which creates numerous failure points. Namely, during error detection and state recovery. Since we are performing error detection on a singular execution of a version, we have no way to detect errors which coincide with normal functioning of the software, e.g. random bit flips in used variable. Errors such as these would result in incorrect output from a version, but would be undetectable provided the memory corruption is minimal. Even if we do detect an error, we have no guarantee that the state which was saved is not corrupted as well. We would need to employ various techniques to detect a corrupted recovery checkpoint and ideally implement redundancies to ensure the state can be restored.
-
-\subsubsection{N-version programming}
-
-N-version programming extends the multi-version technique by running "N" independent versions in parallel or in sequence, hence “N-version” programming. In this approach, each version meeting the same specifications independently performs the task, and the final outcome is determined through a consensus mechanism that evaluates the results from all N executions.
-
-This consensus is usually achieved through a voting algorithm, which aggregates the outputs from each version and selects the result agreed upon by the majority. Selection algorithms are an entire topic of its own covered well by \cite{Aljarbouh_2021}.
-
-This voting approach to handling errors is sometimes referred to as \textbf{fault masking}, since we are not necessarily concerned with detecting an error, but rather getting an acceptable output even in the presence of a fault.
-
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.9\textwidth]{n_version_prog/n_version_prog.png}
-    \caption{N-Version Programming}
-\end{figure}
-
-The primary drawback of N-version programming is its requirement to execute all of the versions before determining the final output. This can be highly resource-intensive, especially for large or complex tasks, as it requires significant computational power and memory to run multiple versions simultaneously.
-
-For systems with limited resources, such as embedded systems, this approach can be particularly inefficient. The need to allocate resources for each version can strain the system's capabilities, potentially reducing its overall performance and responsiveness. As a result, while N-version programming enhances fault tolerance and reliability, it may not be suitable for applications where resource constraints are a priority or where processing efficiency is critical.
-
-A consideration for N-version programming is the possibility of an error not being a random event, but rather a function of the input variables \cite{5326}. Therefore, even multiple versions running in parallel could all fail and give erroneous results. This makes the selection algorithm a critical failure point which N-version programming on its own does not address.
-
-\subsubsection{N Self-checking programming}
-
-N Self-checking programming is an extension of the classic N-version programming, where on top of executing multiple versions, each version also contains its own independent acceptance test or recovery block, before the results are passed to the selection logic. The selection logic then selects the "topmost" possible version that reports a correct output.
-
-A version-specialized acceptance check is an interesting addition, as it provides the opportunity to take advantage of the version implementation details. We can specifically tailor the check to consider the inner workings of the version to detect errors and possibly even correct them before proceeding to the selection stage.
-
-The drawback here is the increase in complexity over the more simple recovery blocks which uses a shared acceptance check, or the simple N-version approach which opts for masking instead. By creating more acceptance checks we are introducing more opportunities for errors to manifest, while also spend more resource on development.
-
-
-\subsubsection{Considerations for multi-version programming}
-
-The primary challenge associated with multi-version programming is the significant effort required to develop, test, and maintain several versions of software that perform the same function. This process can be resource-intensive, leading to increased costs, making it unfeasible for smaller projects or for teams with a limited budget.
-
-To achieve effective multi-version programming, each version must be carefully designed to execute the same task while incorporating distinct failure mechanisms. Ensuring that no two versions fail in the exact same way is very difficult and in practice not always possible.
-
-Research has been conducted into other methods that improve upon the aforementioned multi-version techniques, such as the "t/(n-1)-Variant programming" \cite{589928}. However, the findings do not conclusively prove that the sharp increase in complexity justifies the marginal benefits this or other improved techniques provide.
-
-\subsection{Data Diversity}
-
-Faults within the data are the second largest cause of errors \cite{nasa:stats}, with that in mind, it is sometimes not enough to execute different version of a software on the same data in order to get an acceptable output. Instead, data diversity might be required to ensure correct execution. Data diversity is an orthogonal method to the previously mentioned design diversity methods. It can be used on its own, or in combination with other fault tolerance methods.
-
-\subsubsection{Failure Regions}
-
-In many situations only very conditions will result in an error, we call these specific condition edge-cases. Even with thorough testing, there is no guarantee that all edge-cases will be caught during development, since the failure domain can be extremely small. We can take advantage of this, however, by using "reexpressed" input on a subsequent execution of a procedure, since even small adjustments of the input are likely to move it away from the failure domain. 
-
-\subsubsection{Data Reexpression}
-
-Data reexpression is generation of logically equivalent data sets. Any mapping of a program's data that preserves the information content of the data is a valid reexpression algorithm. A simple approximate data reexpression algorithm for a floating-point quantity might alter its value by a small percentage. The allowable percentage by which the data value could be altered would be determined by the application. In applications that process sensor data, for example, the accuracy of the data is often poor and deliberate small changes are unlikely to affect performance. \cite{nasa:datadiversity}
-
-\begin{figure}[hbt]
-    \centering
-    \includegraphics[width=0.7\textwidth]{diagrams/data_div/reexpress.png}
-    \caption{Data Reexpression}
-    \label{fig:data_rex}
-\end{figure}
+\input{src/analysis/single_version}
+\input{src/analysis/multi_version}
+\input{src/analysis/data_diversity}
 
 \subsection{Miscellaneous}
 (Name is subject to change.)
@@ -265,337 +70,77 @@ This category is dedicated to fault tolerance methods which do not strictly fall
 
 Another interesting example is specialized compiler which embeds fault tolerance into the software during compilation, independently of the actual software's purpose. Example of this approach is \textbf{"Control flow checking by software signature"} published in \cite{994926}.
 
+\clearpage
+\input{src/rust_motivation}
 \newpage
 
-\section{Motivation for Rust}
-One of the main purposes of this thesis is to analyze the suitability of Rust language for the implementation of fault-tolerant software. Historically, C has been the most dominant language in this problem space, but Rust has numerous benefits which make it a strong candidate.
-
-\subsection{Safe by design}
-The goal of the Rust language is to eliminate the most common software bugs at the compiler level. An example of this is Rust's \textit{ownership and borrowing model} - a static code analysis done by the compiler \cite{rust_book:ownership}. It ensures memory safety of the program by explicity disallowing references to deallocated values, which prevents null pointer dereferencing, and also prevents race conditions by limiting the access to mutable variables. Rust's ownership model is a complex topic and explaning it in full is not within the scope of this thesis, more information can be found in the offical Rust book.
-
-\subsection{Robust error handling}
-Another major benefit of Rust is its approach to error handling. Rust splits errors into two categories: \textit{Unrecoverable} errors immediately terminate the execution of the program using the \textit{panic!()} macro and \textit{recoverable} errors which are return values of a function using the Result enum \cite{rust_book:error_handling}.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-fn foo() -> Result<u32, ()> {
-    ...
-}
-fn main() {
-    let Ok(res) = foo() else {
-        // Function returned with an error
-    }
-}
-\end{lstlisting}
-\caption{Rust - error as a value}
-\label{fig:rust_error}
-\end{figure}
-
-Using the approach of \textit{error-as-a-value} we can determine if a function executed successfully by simply checking its return value (see figure \ref{fig:rust_error}). This can act as a very quick and rudimentary form of fault tolerance, since it can be easily applied to any function.
-
-\subsection{Macro system}
-Rust has a powerful macro system which in essence works as a code pre-processor acting over the abstract syntax tree. Unlike C macros, which only work as direct text replacement, Rust macros allow for arbitrary modification and generation of code before the compilation step. Using Rust macros, various fault tolerance techniques can be implmeneted. An example of utilizing macros is highlighted in this very thesis, where a Control Flow Checkign using Signature Streams (CFCSS) technique is implemented using Rust macro system. 
-
-\subsection{Low-level control and C integration}
-Rust demonstrates comparable functionality to C when it comes to low-level control - example being the ability to define custom heap allocator or the ability to use in-line assembly from within Rust. Since Rust uses LLVM under the hood, its compiler is able to link against existing C code. We can also easily use C functions within Rust by declaring the function signature (see figure \ref{fig:rust_extern}). This makes for an easy integration with existing C projects making Rust well suited as a higher level extension. This thesis demonstrates the use of Rust with FreeRTOS codebase written in C.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-unsafe extern "C" {
-    fn puts(string: *const c_char, len: usize) -> i32;
-}
-\end{lstlisting}
-\caption{Rust - Using C function within Rust}
-\label{fig:rust_extern}
-\end{figure}
-
-\newpage
-
+\clearpage
 \section{Implementation}
 
-Implementation section outlines 
+The implementation section outlines some selected methods which were implemented using Rust and FreeRTOS and tested on a RISC-V core simulation. The implemented methods were modified to make them fasible to implement in a high level language. Some examples of the implementation code are also provided where fitting.
 
-\subsection{RISC-V}
-
-\subsubsection{Interrupt and exception handling} \label{sec:riscv_exception_handling}
-
-\begin{figure}
-\begin{lstlisting}[language=Rust]
-#[riscv_rt::exception(Exception::InstructionFault)]
-fn instruction_fault(trap: &mut riscv_rt::TrapFrame) -> ! {
-    unsafe { return_to_checkpoint("InstructionFault") }
-}
-\end{lstlisting}
-\caption{Rust - Exception handler example}
-\label{fig:rust_exception_handler}
-\end{figure}
-
-\subsection{FreeRTOS integration}
-
-In order to integrate Rust with FreeRTOS an open-source library called FreeRTOS-Rust was used. This library provided basic... 
-
+\input{src/implementation/environment}
 \clearpage
 
-\subsection{Checkpoint and restart}
-
-Checkpoint and restart system is the backbone of our fault-tolernace framework. It can be used on its own to provide basic level of redundancy, or it can be combined with other techniques to boost their fualt-tolerance potential. A lot of other methods, namely ones outlined in the Multiversion section use checkpoint and restart at their core.
-
-\subsubsection{Creating a checkpoint} \label{sec:creating_checkpoint}
-
-Checkpoint is generated by creating a \textit{checkpoint context} during which the current state of the application is stored. Namely, the general purpose registers (x0 - x31 in RISCV) are stored into a static memory location before the execution of a \textit{checkpoint block} (the part of code protected by the checkpoint). Additionally, a return address is stored along with the general purpose registers. Higher-level programming languages do not directly provide the functionality to manipulate register values. This means assembly instructions have to be used to facilitate the low level access as seen in figure \ref{fig:rust_create_checkpoint}.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-asm!(
-    // Storing registers in a static variable
-    "lui   t0, %hi(CHECKPOINT)",
-    "addi  t0, t0, %lo(CHECKPOINT)",
-    "sw x1,   4(t0)",
-    "sw x2,   8(t0)",
-    ...
-    // Setting return address to the instruction following this function call
-    "call set_checkpoint",
-
-    // Restoring registers to their previous state
-    "lui   t0, %hi(CHECKPOINT)",
-    "addi  t0, t0, %lo(CHECKPOINT)",
-    "lw x1,   4(t0)",
-    "lw x2,   8(t0)",
-    ...
-)
-\end{lstlisting}
-\caption{Rust - Creating checkpoint}
-\label{fig:rust_create_checkpoint}
-\end{figure}
-
-In order to set the return address, we utilize a trick (shown in figure \ref{fig:rust_set_checkpoint}) whereby calling a function we now have access to the instruction immediatelly following the function call (figure \ref{fig:rust_create_checkpoint} line 12) saved in the return address register (RA). We store the value of this register along with the registers in the checkpoint variable.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-fn set_checkpoint() {
-    unsafe {
-        asm!(
-            "sw ra, ({0})",
-            in(reg) &(CHECKPOINT.ret_addr),
-        );
-    }
-}
-\end{lstlisting}
-\caption{Rust - Set checkpoint}
-\label{fig:rust_set_checkpoint}
-\end{figure}
-
-\subsubsection{Storing the checkpoint}
-
-As mentioned in section \ref{sec:creating_checkpoint}, the checkpoint information is stored in a static memory location. This might seem as an arbitrary decision given that storing the checkpoint on the stack or the heap are also an option. Each of the listed approaches comes with its own issues. Using a static memory location limits the number of checkpoints that can be stored. Using the stack for checkpoint storage can be very unreliable as stack corruption can easily occur should the stack pointer manifest a fault. And using the heap is generally slow and prone to error stemming from pointer corruption or premature memory freeing which could occur in the prsence of faults.
-
-Our implementation uses a hybrid approach of using a static memory location for the storage of the \textit{primary checkpoint} (the last checkpoint that was set), while pushing any older checkpoints on the stack. This heightens the chance that at least the primary checkpoint will be available. Once the primary checkpoint context ends, the previous checkpoint is popped from the stack and can be used again. This allows for infite nesting of checkpoints, provided we have enough memory.
-
-\subsubsection{Returning to the checkpoint}
-
-After setting the checkpoint, the program execution continues as per usual, until either the checkpoint block finishes successfuly, or an error is detected. An error can be detected in two way, an exception is detected by the processor, or an error is detected via checks inserted into the checkpoint block.
-
-If the processor detects an error the exception handler subroutine outlined in section \ref{sec:riscv_exception_handling} is triggered. Stack pointer is restored to the pre-checkpoint block state and the program jumps back to the saved return address.
-
-If an error is detected via checks inserted by the programmer, checkpoint restart can be triggered by simply returning an error (Err()) from within the checkpoint block.
-
-Both forms of error detection and returning to checkpoint result in the restoration of the program context to the program state in which the checkpoint function was called. After the context was restored, checkpoint block will be attempted again if retries are allowed, otherwise the entire checkpoint context returns an erroneous value.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-if let Err(Error::MaxRetriesReached(n)) = checkpoint(2, || {
-    // Checkpoint block here
-    ...
-    Ok(())
-}) {
-    println(&format!("Max retries reached: {}", n));
-}
-\end{lstlisting}
-\caption{Rust - Using the checkpoint system}
-\label{fig:rust_using_checkpoint}
-\end{figure}
-
-\subsubsection{Performance impact}
-
-The implemented checkpoint system incurs minimal instruction overhead. Additional instructions are only inserted when creating the checkpoint context and just before the end of the checkpoint context. This comes out to 79 additional instructions to save and restore program state, plus approximately 300 instructions to save and restore old checkpoint and perform various error checks, without factoring in any compiler optimizations.
-
-This overhead is constant for the entire checkpoint block, irrespective of the checkpoint block size. As such, the ratio of overhead instructions to the checkpoint block instructions is solely determined by the size of the protected checkpoint block.
-
-\subsubsection{Considerations}
-
-Checkpoint system only facilitates basic restart and retry functionality. It can be used on its own when only basic level of protection is required, however, in most cases, checkpoint and restart system is meant to be used as a framework to build upon. Namely, the multi-version techniques outlined in later sections all use checkpoints to implement version switching.
-
-Our implmenetation of the checkpoint and restart system only saves the minimal required state, which in the case of RISC-V, is the general registers. This limits the use of the checkpoint system as other memory regions such as stack or heap are not stored. Careful consideration needs to be given to the code block protected by the checkpoint context. If the checkpoint body has any side-effects, such as modifying global variables, variables outside of the checkpoint block scope or writing to heap, these alterations will not be reversed in the case of an error and subsequent checkpoint return.
-
-This problem can be avoided by explicitly creating a copy of any outside variable which needs to be modified within the checkpoint block. The copy will then be used within the checkpoint block and the original variable will only be overrided if the checkpoint context returns successfully. More on this in section \ref{sec:var_protection}.
-
-Another important thing to mention is that our implementation does not save registers other than the general purpose registers. This means special registers such as \textit{mtvec}, \textit{mcause} or \textit{mstatus} are not protected by the checkpoint system. The fault-insertion simulation does not insert faults into these registers, as such their directly protection is not needed. However, errors can still manifest (as if they occuerd in the special registers) in ALU after the special registers are read for processing.
-
+\input{src/implementation/checkpoint}
 \clearpage
 
-\subsection{CFCSS}
-
-Unlike the usual implementation, which works over assembly instructions, or LLVM's intermediate representation (IR), our implementation takes advantage of Rust's macro system to insert CFCSS directly into program code. An algorithm originally designed for LLVM IR is used, with modifications to make it suitable for our purposes \cite{coast:cfcss}.
-
-Macro is used to designate a \textit{module} as CFCSS protected, each function within the module being designated as a \textit{block} ({$b_n$}). A graph is then generated at compile time representing the allowed control flow within the protected module. Each block within the graph is assigned a random unique signature ({$s_n$}) and signature difference ({$d_n$}), which is calculated by XORing ({$\oplus$}) the current block's signature and the signature of its predecessor as seen in equation \ref{eq:block_diff}.
-
-\begin{equation}
-d_n = s_n \oplus s_{n-1}
-\label{eq:block_diff}
-\end{equation}
-
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=1.0\textwidth]{diagrams/cfcss/basic.png}
-    \caption{Basic CFCSS \cite{coast:cfcss}}
-\end{figure}
-
-A runtime signature {$G_n$} is also created for the given protected module, initially set to {$G_0 = 0$}. This signature is updated at runtime before the execution of every block by XORing it with the signature difference of the destination block (equation \ref{eq:runtime_sig}). Using XOR to update the runtime signature is favorable, since XOR operation can be undone by simply being repeated, which is desirable when returning from a block.
-
-\begin{equation}
-\label{eq:runtime_sig}
-G_n = G_{n-1} \oplus d_n
-\end{equation}
-
-To ensure correct control flow, the newly calculated runtime signature must be equal to the function signature, otherwise an invalid branching occured.
-
-\begin{equation}
-\label{eq:sig_check}
-G_n = s_n
-\end{equation}
-
-This approach is, however, insufficient in the presence of so-called \textit{fan-in} block. If both {$b_1$} and {$b_3$} have an edge to {$b_4$} a problem arises where (provided that {$s_1 \ne s_3$}) either {$G_4 = G_1 \oplus d_4$} is true or {$G_4 = G_3 \oplus d_4$}.
-
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{diagrams/cfcss/adjuster.png}
-    \caption{CFCSS with fan-in block \cite{coast:cfcss}}
-\end{figure}
-
-We need to introduce another constant called signature adjuster ({$D_n$}) caluclated for each predecessor of a fan-in node, and apply it while updating the runtime signature. This gives us the actual equation (\ref{eq:runtime_sig_with_adj}) for updating runtime signature.
-
-\begin{equation}
-\label{eq:runtime_sig_with_adj}
-G_n = G_{n-1} \oplus d_n \oplus D_n
-\end{equation}
-
-\subsubsection{Macro implementation}
-
-The Rust macro generates static variables ({$G_n, D_n, s_n, d_n$}) during compile time and inserts additional code before and after the actual function code witin the protected module (see figure \ref{fig:rust_cfcss_macro}). The instructions inserted after the function block are equivalent to the ones inserted before, with the exception of restoring \textit{last adjuster} from stack instead of updating and storing it.
-
-\begin{figure}[!h]
-    \begin{lstlisting}[language=Rust]
-    RUNTIME_SIGNATURE ^= #dif_name;
-    if is_fan_in {
-        RUNTIME_SIGNATURE ^= RUNTIME_ADJUSTER;
-    }
-    if #sig_name != RUNTIME_SIGNATURE {
-        return_to_checkpoint(ERROR_MSG);
-    }
-    if func_has_adjuster {
-        RUNTIME_ADJUSTER = #adj_name;
-    }
-    \end{lstlisting}
-    \caption{Rust - CFCSS instructions inserted before function block}
-    \label{fig:rust_cfcss_macro}
-    \end{figure}
-
-This macro can be applied as shown in figure \ref{fig:rust_cfcss_macro_example} by specifying a module as \textit{\#[cfcss\_root]}. An entry funciton is designated with a special macro \textit{\#[entry]}, this macro embeds additional instruction that reset the runtime signature and adjuster of the module, allowing for repeated call of the entry point. An entry function can only be a function that is not called from within another function in the protected module.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-#[cfcss_root]
-pub mod protected_block {
-    fn function_0();
-    fn function_1();
-    #[entry]
-    pub fn entry_function() {
-        function_0();
-        function_1();
-    }
-}
-\end{lstlisting}
-\caption{Rust - Using the CFCSS macro}
-\label{fig:rust_cfcss_macro_example}
-\end{figure}
-
-\subsubsection{Performance impact}
-
-Embedding new instruction during compile time will understandably have performance impact on the execution of the program. Each function will incur a execution overhead, as multiple operations and checks must be carried out before the actual function body executes. Approximately 50 additional assembly instructions are inserted before the function block and 50 more after the function block, without using any compiler optimizations.
-
-However, due to the nature of the implementation, the developer is in full control of just how much overhead is incurred. Since the number of additional instructions is constant per function definition, we can either split our protected module into fewer function to have less overhead, but at the cost of less fault-tolerance. Or we can fragment our code into as many function blocks as possible, and thereby increasing the number of control flow checks performed.
-
-\subsubsection{Considerations}
-
-Since our implementation of CFCSS utilizes a purely code based approach it natuarally comes with several limitations. Unlike the traditional approach, which implements CFCSS at IR level by extending the LLVM pipeline we do not have access to the underlying instructions, which limits the possible density of the control flow checks. An IR approach is able to precisely insert instructions after every branch and jump operations, and also has more granular control over the actual instructions being inserted. This means our implementation is more prone to control flow errors. Although not within the extent of this thesis, further improvements could be made by directly extending Rust's LLVM pipeline and integrating a CFCSS method at IR level.
-
+\input{src/implementation/cfcss}
 \clearpage
-\subsection{Protection of variables} \label{sec:var_protection}
 
-Various unforseeable circumstances can lead to the corruption of program variables, from direct corruption of registers storing the variables to indirect side-effect stemming from errors within function that work with said variables. This section focuses on various techniques implemented to ensure the reliability of critical program variables with variying degree of protection depending on the use case.
-
-\subsubsection{Copy and commit}
-
-Copy and commit is a method inspired by a common practice in database transaction handling, where a temporary copy of the data is modified, and changes are only applied to the original data upon an explicit commit. This pattern is particularly useful when modifications must be validated or selectively applied, reducing the risk of unintended side effects. In the Rust example shown in Figure~\ref{fig:rust_copy_commit}, a CopyCommit wrapper is used to hold a temporary copy of the value. Inside the bar function, the value is incremented, but the change only takes effect on the original data when commit() is called. This allows for greater control over when and how mutations are finalized.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-fn bar(mut a: CopyCommit<u32>) {
-    *a += 1;
-    a.commit();
-}
-
-fn foo() {
-    let mut a = 1;
-    bar(CopyCommit::new(&mut a));
-}
-\end{lstlisting}
-\caption{Rust - Copy and commit example}
-\label{fig:rust_copy_commit}
-\end{figure}
-
-While this method gives us more control over when variables are modified and helps prevent unwanted side-effects, it inherently does not provide any fault tolerance against direct corruption of variables. As such, it should only be reserved for non-critical parts of the program, and or combined with other variable protection techniques.
-
-\subsubsection{Multiple redundant variables}
-
-Another way we can secure a variable is creating multiple copies of it and applying any modification to all the copies. The modified copies are then copared against each other to detect any mismatch. With two copies of a variable, we can detect an error but cannot correct it, since we cannot tell which one of the copies is faulty. With three copies, we can detect an error but also perform correction, if at least two copies of the variable are equal. The more copies we create the more likely we are to have a majority of the variables be equal, therefore the more confident we can be in our fault-tolerance.
-
-\begin{figure}[!h]
-\begin{lstlisting}[language=Rust]
-// Creates 3 identical copies
-let mut a = MultiVar::new(0);
-
-// Applies the edit function to each of the copies and performs equality check
-if let Err(e) = a.edit(|ptr_a| {
-    *ptr_a += 1;
-}) {
-    // Error while updating variable
-    ...
-}
-\end{lstlisting}
-\caption{Rust - Multiple variable redundancy}
-\label{fig:multivar}
-\end{figure}
-
-In our implementation, a MultiVar wrapper around a variable is used to automatically instantiate three separate copies of the variable as seen in Figure \ref{fig:multivar}. By calling the edit function on the wrapper, we map any modification to all the copies of the variable. The edit function also includes an internal checks which tries to correct the variables in a case of a mismatch. If correction is not possible this function returns an error.
-
-\subsubsection{Checksum}
-
-Checksum is a technique to ensure a long-lived variable has not been corrupted during the execution of the program. If we need to store a variable for prolonged amount of time we can store a checksum along with it. The checksum is calculated by splitting the stored data into chunks of 32-bits each and XORing these chunks with one another, thereby generating an unique signature.
-
-Every time the protected variable is modified the checksum is updated by recalcuating the signature. Before the variable data is read again at a later point in the program, a checksum is recalculated and compared with the stored checkum. If the checksums match the variable has not been changed since the last proper modification. In the case of a checksum mistmatch, however, the variable is likely to have been unexpected modified or directly corrupted.
-
-This technique is best utlized for global variables, since they live for the duration of the program and their correctness is paramount for the correct application functioning. 
-
-
+\input{src/implementation/variables}
 \clearpage
-\subsection{Multiversion}
+
+\input{src/implementation/multiversion}
 
 \section{Testing}
 
+Testing of the implementation was done on a custom RISC-V core (1MB RAM, 8KB stack, 8KB heap) simulation with the ability to statically insert faults during runtime of the program. The frequency of the fault insertion as well as the memory regions where fault are inserted can be changed to simulate different environments and circumstances. For the purpose of narrowing down the scope of the thesis, faults were only inserted in the following memory regions:
+
+\textbf{General Purpose Registers} (GPR)
+Registers used for general computation or temporary storage during instruction execution.
+
+\textbf{Register File Control} (RFC)
+Controls access to the register file; involved in reading/writing registers.
+
+\textbf{Predicate Registers} (PRED)
+Used in prediction of conditional execution (error inserted here should not actually have any impact on the program functioning, as the prediction logic is assumed to be possibly innacurate by design).
+
+\textbf{Arithmetic Logic Unit} (ALU)
+The part of the CPU that performs arithmetic and logical operations.
+
+\textbf{Multiply-Divide Unit} (MDU)
+Specialized unit for performing multiplication and division operations.
+
+\textbf{Data Path} (DP)
+The part of the CPU where data is processed, including registers, ALUs, and buses.
+
+\textbf{Trap Interrupt Registers} (TP)
+Handles traps (exceptions) and interrupts in the CPU.
+
+Notably, RAM was exempt from fault insertions during our testing. Should a non-transient error occur in the part of RAM which holds the program instructions there would be no way to properly recover from it using software-only fault tolerance. Usually, RAM and CPU duplication is used, effectively running the same program twice in parallel with set synchronization points. This method is outside of the scope of software implemented fault tolerance.
+
+The methods outlined in the implementation section, however, are in theory capable of detecting and recovering from certain faults in RAM. As mentioned in section \ref{sec:checksum}, checksums are capable of detecting corruption in variables, this includes variables stored in the RAM. Similarly, using multiversion programming can provide tolerance even in the case of non-transient error occuring in one of the versions. Due to general unreliability of this approach, however, the testing on RAM fault insertions was not conducted.
+
 \subsection{Common errors}
 
+Despite the fact that the timing and location of error manifestation is unpredictable, most errors usually result in similar program states. We can check for the occurence of these states to determine what kind of error we are dealing with.
+
+\subsubsection{Exception}
+
+\subsubsection{Infinite loop}
+
+\subsubsection{}
+
+
 \subsection{Fault coverage}
+
+\clearpage
+\section{Conclusion}
+
+
+\clearpage
+\section{Resumé}
 
 \newpage
 \printbibliography

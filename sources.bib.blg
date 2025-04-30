@@ -1,5 +1,0 @@
-[0] Config.pm:307> INFO - This is Biber 2.19
-[0] Config.pm:310> INFO - Logfile is 'sources.bib.blg'
-[65] biber:340> INFO - === St jan  1, 2025, 20:19:05
-[128] Utils.pm:410> ERROR - Cannot find 'sources.bib.bcf'!
-[128] Biber.pm:136> INFO - ERRORS: 1
