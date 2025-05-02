@@ -1,0 +1,22 @@
+\subsection{Previous work}
+
+While the analysis so far was mostly theoretical, this section outlines methods already implemented and tested in practice, giving an insight into what we can expect when implemnting our own fault-tolerance methods.
+
+\subsubsection{EDDI}
+
+Error Detection by Duplicated Instructions \cite{eddi} (EDDI) is a pure software, single-version, technique that enhances runtime error detection by duplicating program instructions during compilation. Each original instruction (master instruction) is paired with a duplicate (shadow instruction) that operates on separate registers or variables. At key synchronization points, such as before memory writes or control transfers, the system compares the results of the master and shadow instructions. Any mismatch indicates an error, triggering a fault handler. EDDI leverages idle resources in super-scalar processors by interleaving these redundant instructions to maximize instruction-level parallelism while minimizing performance overhead. It is particularly effective in detecting transient faults, memory corruption, and control-flow deviations without requiring any hardware modifications, achieving over 98\% fault coverage in benchmark programs.
+
+
+\subsubsection{CFCSS}
+
+Control Flow Checking by Software Signatures (CFCSS), originally proposed in \cite{994926} is a pure software method that embeds control-flow checking logic into a program at compile time. It is capable of detecting faulty branching or jumps within the program. 
+
+The program is first divided into basic blocks, each representing a unique node in the control-flow graph. A unique signature is assigned to each node, and additional instructions are inserted to monitor the program's control flow during execution.
+
+At runtime, the control flow is validated using a designated general-purpose register (GSR), which holds the expected signature. When control transfers to a new basic block, a new runtime signature is generated using a lightweight XOR-based function that combines the previous and current signatures. This updated signature is then compared with the expected one at the destination block. If a mismatch is detected, it indicates an illegal control transfer, and execution is redirected to an error handler.
+
+CFCSS is particularly advantageous because it requires no dedicated hardware (e.g., watchdog processors) and can operate even in environments without multitasking support. Its effectiveness was validated through fault injection experiments, which showed that while 33.7\% of branching faults went undetected in unprotected programs, only 3.1\% remained undetected when CFCSS was applied, demonstrating an order-of-magnitude improvement in error detection coverage. Although CFCSS introduces moderate code size and execution time overhead (especially in branch-heavy programs).
+
+\subsubsection{SWIFT}
+
+SWIFT \cite{swift} (Software Implemented Fault Tolerance) is a compiler-based technique for detecting transient faults using software-only transformations, without requiring any specialized hardware. It builds upon earlier methods like EDDI by duplicating instructions and inserting validation checks, but improves upon them with several key optimizations to reduce memory and performance overhead. Unlike EDDI, SWIFT excludes memory from the sphere of replication, assuming protection is already provided by ECC in modern systems. It introduces an enhanced control-flow checking mechanism using software signatures, allowing it to detect illegal control transfers more reliably. Additionally, SWIFT incorporates optimizations such as restricting signature checks to store-containing blocks and eliminating redundant branch validation. These design decisions enable SWIFT to achieve high fault coverage with lower execution and code size overhead. Evaluated on the Itanium 2 architecture, SWIFT demonstrated fault detection rates comparable to hardware-based methods while incurring significantly less overhead than previous software-only techniques, making it well-suited for deployment on commodity hardware.

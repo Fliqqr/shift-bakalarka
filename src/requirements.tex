@@ -1,0 +1,24 @@
+\clearpage
+\section{Requirements Specification}
+
+The primary objective of this project is to analyze, implement, and evaluate selected software-based fault tolerance techniques. The focus is on embedded systems operating in environments where faults, particularly single event upsets (SEUs), can compromise system behavior. These issues are especially relevant in resource-constrained systems where safety and reliability are paramount.
+
+This section outlines the functional and non-functional requirements that the proposed system must fulfill to meet its objectives. The requirements are derived from practical scenarios and target use cases involving typical embedded workloads, including mathematical computations, sorting algorithms, and data integrity verification. These tasks will be executed under both normal and fault-injected conditions to evaluate the system's behavior and robustness.
+
+\subsection*{Functional Requirements}
+\begin{itemize}
+\item The system shall implement multiple software-based fault tolerance techniques.
+\item The system shall be capable of detecting and reporting transient faults at runtime.
+\item The system shall provide a mechanism for recovering from detected faults where applicable (e.g., via checkpoint rollback or redundant execution).
+\end{itemize}
+
+\subsection*{Non-Functional Requirements}
+\begin{itemize}
+\item The system shall introduce minimal performance overhead relative to the unprotected baseline.
+\item The solution shall be implemented entirely in software.
+\item All fault tolerance methods shall be implemented in the Rust programming language to leverage its memory safety guarantees and low-level control.
+\item The system shall be portable and capable of running on a 32-bit RISC-V platform using the FreeRTOS operating system.
+\item The implementation shall be maintainable and modular, enabling future extension or substitution of fault tolerance mechanisms.
+\end{itemize}
+
+Ultimately, the project aims to deliver a practical and reproducible evaluation framework for software-based fault tolerance, enabling developers to assess the trade-offs between fault coverage, runtime overhead, and system complexity in embedded contexts.

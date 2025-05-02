@@ -1,1 +1,1 @@
-Documentation [here](./docs.pdf)
+Documentation [here](./build/docs.pdf)

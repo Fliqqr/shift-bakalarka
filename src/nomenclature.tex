@@ -1,7 +1,5 @@
 \section{Nomenclature}
 
-\subsection{Common terms}
-
 For the sake of consistency in the terms used in this document, we will refer to the naming conventions and definitions as outlined in \cite{1335465}. Below are the definitions of the most crucial terms used. \\
 
 \textbf{Failure} is an event that occurs when the delivered service deviates from correct service. A service fails either because it does not comply with the functional specification, or because this specification did not adequately describe the system function. A service failure is a transition from correct service to incorrect service, i.e., to not implementing the system function \cite{1335465}. \\
@@ -10,4 +8,6 @@ For the sake of consistency in the terms used in this document, we will refer to
 
 \textbf{Fault} is the actual or hypothesized cause of an error. Faults are usually considered dormant until manifested, causing an error \cite{1335465}. An example of a fault might be hardware issue causing an I/O device to send corrupted data as input. If the software is not designed to deal with incorrect input this would lead to an internal error, possibly causing a service failure. \\
 
-\textbf{Fault tolerance} is the ability to avoid service failures in the presence of faults. 
+\textbf{Fault Tolerance} is the system's ability to continue operating correctly in the presence of faults. Rather than eliminating faults entirely, fault-tolerant systems are designed to detect, isolate, and recover from faults before they cause service failures. \\
+
+\textbf{System boundary} defines what is considered part of the system and what is not. It separates the system from everything outside it. This helps us know which components, functions, or behaviors are included when analyzing or designing the system. Understanding the system boundary is important for knowing where problems might happen and who or what is responsible for handling them.

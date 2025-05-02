@@ -9,14 +9,14 @@ Recovery blocks is a simple form of multi-version programming, expanding upon th
 
 A key advantage of the recovery blocks technique is that, in most cases, the initial version will execute successfully, allowing subsequent versions to prioritize redundancy and safety over performance. This enables the design of backup versions with gradually reduced performance requirements, ensuring robust fallback options without excessive resource consumption.
 
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.9\textwidth]{recovery_blocks/recovery_blocks_01.png}
-    \caption{Recovery Blocks}
-    \label{fig:rec_blo}
-\end{figure}
+% \begin{figure}[hbt!]
+%     \centering
+%     \includegraphics[width=0.9\textwidth]{recovery_blocks/recovery_blocks_01.png}
+%     \caption{Recovery Blocks}
+%     \label{fig:rec_blo}
+% \end{figure}
 
-\break
+% \break
 
 Since errors are relatively rare compared to normal execution, this approach often achieves an optimal balance of performance and reliability. By prioritizing efficiency in the primary execution path while incorporating progressively resilient alternatives, recovery blocks can provide dependable fault tolerance without compromising system performance in typical operating conditions. This balance makes recovery blocks a practical solution for systems requiring high availability and reliability.
 

@@ -1,0 +1,5 @@
+- Move Motivation for Rust to Environment as subsection 
+- Why Rust in implementation
+- list of common abbreviations: ECC, CRC, SEU...
+- Hardisc protects RAM
+- Overall code size in Testing chapter

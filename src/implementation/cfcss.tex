@@ -1,7 +1,5 @@
 \subsection{CFCSS}
 
-TODO: Explain why CFCSS is important (e.g. how branching errors occur)
-
 Unlike the usual implementation, which works over assembly instructions, or LLVM's intermediate representation (IR), our implementation takes advantage of Rust's macro system to insert CFCSS directly into program code. An algorithm originally designed for LLVM IR is used, with modifications to make it suitable for our purposes \cite{coast:cfcss}.
 
 Macro is used to designate a \textit{module} as CFCSS protected, each function within the module being designated as a \textit{block} ({$b_n$}). A graph is then generated at compile time representing the allowed control flow within the protected module. Each block within the graph is assigned a random unique signature ({$s_n$}) and signature difference ({$d_n$}), which is calculated by XORing ({$\oplus$}) the current block's signature and the signature of its predecessor as seen in equation \ref{eq:block_diff}.
@@ -86,7 +84,7 @@ pub mod protected_block {
 \label{fig:rust_cfcss_macro_example}
 \end{figure}
 
-\subsubsection{Performance impact}
+\subsubsection{Overhead}
 
 Embedding new instruction during compile time will understandably have performance impact on the execution of the program. Each function will incur a execution overhead, as multiple operations and checks must be carried out before the actual function body executes. Approximately 50 additional assembly instructions are inserted before the function block and 50 more after the function block, without using any compiler optimizations.
 
@@ -95,3 +93,5 @@ However, due to the nature of the implementation, the developer is in full contr
 \subsubsection{Considerations}
 
 Since our implementation of CFCSS utilizes a purely code based approach it natuarally comes with several limitations. Unlike the traditional approach, which implements CFCSS at IR level by extending the LLVM pipeline we do not have access to the underlying instructions, which limits the possible density of the control flow checks. An IR approach is able to precisely insert instructions after every branch and jump operations, and also has more granular control over the actual instructions being inserted. This means our implementation is more prone to control flow errors. Although not within the extent of this thesis, further improvements could be made by directly extending Rust's LLVM pipeline and integrating a CFCSS method at IR level.
+
+Additionally, CFCSS is incompatible with the aforementioned checkpoint and restart system. As explained in section \ref{sec:checkpoint_considerations}, our checkpoint and restart system does not restore context of static variables, which CFCSS relies on for proper functioning. As such, checkpoints cannot be used within a CFCSS protected module, since if a checkpoint restart were to happen, the runtime signature and adjuster would not be reset to their proper pre-checkpoint values.

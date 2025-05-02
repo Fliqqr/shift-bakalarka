@@ -1,0 +1,23 @@
+\section{Environment}
+
+This section outlines the implementation environment, including hardware constraints, system configuration, and software integration. It also describes key modifications made to support our specific use case.
+
+\subsection{RISC-V}
+
+The implementation was developed for a 32-bit RISC-V core, running in a simulated environment. The simulation features a single RAM region with a total size of 1MB. Of this, 8KB was allocated for the stack and another 8KB for heap memory. These parameters can be adjusted as needed for testing and experimentation.
+
+A key feature of the RISC-V architecture is its interrupt handling mechanism, which distinguishes between two primary types of interrupts. \textit{Software interrupts} are triggered by the program itself, often to perform system calls, while \textit{hardware interrupts} are initiated by hardware events, such as timers or peripherals.
+
+\subsection{FreeRTOS and Interrupt Management}
+
+The system runs on the FreeRTOS kernel, a lightweight real-time operating system widely used in embedded systems. FreeRTOS is designed for minimal resource usage, making it suitable for constrained environments like our RISC-V simulation.
+
+FreeRTOS uses \textit{tasks} to run user code. Task is a wrapper around user code which include the specific code's context. Tasks can be instantiated at any point during the program's lifetime. FreeRTOS \textit{scheduler} handles the execution of tasks as well as switching between them using the RISC-V hardware interrupt - \textit{Machine Timer Interrupt}.
+
+In addition to timer-based preemption, FreeRTOS also makes use of software interrupts, such as those triggered by the RISC-V ecall instruction. These interrupts are typically used for system-level operations and are routed, along with hardware interrupts, through a shared interrupt handler. In our case, this handler is implemented using a vectored interrupt table to efficiently dispatch control to the correct service routine.
+
+\subsection{Rust Integration with FreeRTOS}
+
+To enable Rust development on top of FreeRTOS, we used the open-source FreeRTOS-Rust library\footnote{\url{https://github.com/lobaro/FreeRTOS-rust}}. This library provides Rust bindings to the FreeRTOS C ABI. Modifications had to be done to ensure compatibility with our simulated environment. Notably, the used library required atomic instructions for certain functionality, however, our simulation did not support atomic operations. Since we are only simulating single core, multithreading is not a concern, as such, we could safely replace all atomic operations with their non-atomic counterparts.
+
+On top of this, RISC-V Rust library\footnote{\url{https://github.com/rust-embedded/riscv}} was used to facilitate the compilation of Rust into a RISC-V acceptable binary. This library provided functionality such as designating the program entry point, designating the exception and interrupt handler functions and provided functions to work with RISC-V specific registers. However, the used library also added significant performance overhead in the form of BSS clearing segment before the main program start. Clearing BSS is useful to ensure all variables are initialized to 0 if a default value is not assigned. However, because Rust does not fundamentally allow for the use of non-instantiated variables this step was not necessary for our use case. By removing this segment we saved significant computation time, reducing the possible area for faults to manifest.
