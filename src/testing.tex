@@ -24,9 +24,49 @@ Notably, RAM was exempt from fault insertions during our testing. Should a non-t
 
 The methods outlined in the implementation section, however, are in theory capable of detecting and recovering from certain faults in RAM. As mentioned in section \ref{sec:checksum}, checksums are capable of detecting corruption in variables, this includes variables stored in the RAM. Similarly, using multiversion programming can provide tolerance even in the case of non-transient error occuring in one of the versions. Due to general unreliability of this approach, however, the testing on RAM fault insertions was not conducted.
 
-\subsection{Fault coverage}
+\subsection{Benchmarks}
 
-TODO: Add stats for protected vs unproteced execution results
+A set of benchmarks was selected to evaluate the effectiveness of the implemented fault tolerance techniques. These benchmarks primarily consist of common arithmetic operations and data manipulation tasks representative of typical embedded system workloads. 
+
+In addition to standard benchmarks, one unique benchmark - \textit{Nested Function Calls} (NFC) was included. This benchmark involves a series of functions invoking one another in a nested manner, creating intertwined control-flow graph. It was specifically chosen to assess the performance impact of CFCSS, which is particularly sensitive to complex function call hierarchies.
+
+Benchmark programs report results in one of two ways, successful execution (0) and unrecoverable error (1). Any other return status code is considered an unknown error. The reliability of the fault tolerance was measured as a sum of successful executions and correctly reported unrecoverable errors divided by the overall number of executions (25 per benchmark). Each benchmark was given equal amount of time to execute (100 000 CPU cycles), if the time thresholdt is reached the program ends in a timeout. Notably, a timeout does not necessarily means the benchmark itself did not execute correctly. It is very common for the FreeRTOS scheduler to be the source of an error leading to a timeout. As such, in the case of a timeout, the output logs are examined to determine if the benchmark succeeded.
+
+\begin{table}[h]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Fib sequence} & \textbf{Correct} & \textbf{Errors Reported} & \textbf{Fault tolerance} & \textbf{Timeouts} \\
+\hline
+Unprotected & 10 & 5 & 60\% & 8 \\
+Protected & 14 & 9 & 92\% & 3 \\
+\hline
+\end{tabular}
+}
+\caption{Fibonacci sequence benchmark statistics}
+\label{tab:fib_bench}
+\end{table}
+
+As seen in Table \ref{tab:fib_bench} the overall fault tolerance of the protected benchmark went up significantly. The increase in correct results was not exceptionally high likely due to the fact that errors mostly occurred outside of the variables and registers that would directly alter the computation result. Rather, most faults resulted in errors manifesting in various supporting subroutines. Evidence of this is the nearly doubled number of reported errors when fault tolerance was enabled.
+
+\begin{table}[h]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Matrix dot product} & \textbf{Correct} & \textbf{Errors Reported} & \textbf{Fault tolerance} & \textbf{Timeouts} \\
+\hline
+Unprotected & 16 & 0 & 64\% & 9 \\
+Protected & 18 & 7 & 100\% & 0 \\
+\hline
+\end{tabular}
+}
+\caption{Matrix multiplication benchmark statistics}
+\label{tab:matrix_bench}
+\end{table}
+
+Similar trend can be observed in the case of Matrix benchmark (see Table \ref{tab:matrix_bench}). The correct results difference is even lower, likley due to the fact that the matrix dot product test requires less CPU instructions, and therefore is a relatively smaller area for faults to manifest. However, the overall error reporting went up significantly, proving our fault tolerance methods are good at catching error that would otherwise result in unexepcted program termination.
 
 \subsection{Performance impact}
 
@@ -41,11 +81,11 @@ The test were measured in CPU cycles using the RISC-V \textit{mcycle} and \texti
 \hline
 \textbf{Test} & \textbf{Unprotected (cycles)} & \textbf{Protected (cycles)} & \textbf{Increase (\%)} \\
 \hline
-Fibonacci sequence & 30734 & 34983 & 13.82\% \\
-Matrix dot product & 9871 & 11133 & 12.78\% \\
-Nested function calls & 9889 & 13126 & 32.73\% \\
+Fibonacci & 30734 & 34983 & 13.82\% \\
+Matrix & 9871 & 11133 & 12.78\% \\
+NFC & 9889 & 13126 & 32.73\% \\
 Bubblesort & 15228 & 16773 & 10.14\% \\
-CRC calculation & 8278 & 10614 & 28.21\% \\
+CRC & 8278 & 10614 & 28.21\% \\
 \hline
 \end{tabular}
 }
@@ -74,3 +114,21 @@ CRC calculation & 10614 & 8746 \\
 \caption{Protected fibonacci test with and without CFCSS}
 \label{tab:cfcss_nocfcss}
 \end{table}
+
+\subsection{Size Impact}
+
+To evaluate the memory overhead introduced by the fault tolerance mechanisms, we compared the size of the compiled binaries with and without protection under two conditions: with no compiler optimizations and with standard release optimizations enabled. As expected, enabling protection introduces additional instructions and data structures, resulting in larger binary sizes. The impact is more pronounced in the unoptimized build, while optimized builds show a more moderate increase due to compiler optimizations reducing overall code size.
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Compiler optimizations?} & \textbf{Unprotected} & \textbf{Protected} & \textbf{Size increase} \\
+\hline
+NO  & 23164 & 32847 & 41.8\% \\
+YES & 8467 & 9216 & 8.84\% \\
+\hline
+\end{tabular}
+\caption{Binary size increase with and without protection}
+\end{table}
+
