@@ -68,6 +68,8 @@ Protected & 18 & 7 & 100\% & 0 \\
 
 Similar trend can be observed in the case of Matrix benchmark (see Table \ref{tab:matrix_bench}). The correct results difference is even lower, likley due to the fact that the matrix dot product test requires less CPU instructions, and therefore is a relatively smaller area for faults to manifest. However, the overall error reporting went up significantly, proving our fault tolerance methods are good at catching error that would otherwise result in unexepcted program termination.
 
+TODO: More benchmarks...
+
 \subsection{Performance impact}
 
 Performance impact of the implemneted fault-tolerance methods was measured without employing any compiler optimizations on a fault-free version of the simulated core. In the presence of faults, the effective performance could vary unexpected, influenced by the randomness of the fault insertion. As such, there is not much point in measuring performance in the presence of faults.
@@ -93,27 +95,27 @@ CRC & 8278 & 10614 & 28.21\% \\
 \label{tab:time_increase}
 \end{table}
 
-As expected, looking at Table \ref{tab:time_increase} we see an increase in CPU cycles it takes to execute the protected version as opposed to the unprotected one. Fibonacci, Matrix and Bubblesort (group one) test only incurred rougly 12\% increase, while both "Nested function calls" and CRC (group two) incurred much more substantial increase. The main difference between these two groups of tests is their flow graph complexity. Group one has linear control flow and mostly consists of 1-4 function call, meaning very little time is spent on CFCSS checking. Group two has more complex control flow resulting in a lot of CFCSS checks.
+As expected, looking at Table \ref{tab:time_increase} we see an increase in CPU cycles it takes to execute the protected version as opposed to the unprotected one. Fibonacci, Matrix and Bubblesort (group one) test only incurred rougly 12\% increase, while both NFC and CRC (group two) incurred much more substantial increase. The main difference between these two groups of tests is their flow graph complexity. Group one has linear control flow and mostly consists of 1-4 function call, meaning very little time is spent on CFCSS checking. Group two has more complex control flow resulting in a lot of CFCSS checks.
 
-Comparing the results of select tests without CFCSS (Table \ref{tab:cfcss_nocfcss}), we can deduce several things. The additional CPU cycles needed for checkpoint and multiversion protection is between 1000 and 1500 cycles. This is a constant increase and should not scale with the control flow complexity or instruction size of the tests. The CFCSS 
+% Comparing the results of select tests without CFCSS (Table \ref{tab:cfcss_nocfcss}), we can deduce several things. The additional CPU cycles needed for checkpoint and multiversion protection is between 1000 and 1500 cycles. This is a constant increase and should not scale with the control flow complexity or instruction size of the tests. The CFCSS 
 
-\begin{table}[h]
-\centering
-% \resizebox{\linewidth}{!}{%
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Test} & \textbf{With CFCSS} & \textbf{Without CFCSS} \\
-\hline
-Fibonacci sequence & 34983 & 31881 \\
-Nested function calls & 13126 & 11828 \\
-CRC calculation & 10614 & 8746 \\
+% \begin{table}[h]
+% \centering
+% % \resizebox{\linewidth}{!}{%
+% \begin{tabular}{|l|c|c|}
+% \hline
+% \textbf{Test} & \textbf{With CFCSS} & \textbf{Without CFCSS} \\
+% \hline
+% Fibonacci sequence & 34983 & 31881 \\
+% Nested function calls & 13126 & 11828 \\
+% CRC calculation & 10614 & 8746 \\
 
-\hline
-\end{tabular}
-% }
-\caption{Protected fibonacci test with and without CFCSS}
-\label{tab:cfcss_nocfcss}
-\end{table}
+% \hline
+% \end{tabular}
+% % }
+% \caption{Protected fibonacci test with and without CFCSS}
+% \label{tab:cfcss_nocfcss}
+% \end{table}
 
 \subsection{Size Impact}
 
@@ -132,3 +134,4 @@ YES & 8467 & 9216 & 8.84\% \\
 \caption{Binary size increase with and without protection}
 \end{table}
 
+Final size of the binary is an important consideration for fault tolerance. The larger the binary the more instructions will be executed, on average, to run our program. This increases the execution time and the probability of errors manifesting.
