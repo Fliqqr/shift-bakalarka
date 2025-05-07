@@ -1,12 +1,14 @@
 \documentclass[12pt, letterpaper]{article}
 \usepackage[
     backend=biber,
-    style=alphabetic,
+    style=numeric,
 ]{biblatex} 
 \usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage{pdfpages}
 \usepackage{listings, listings-rust}
+\usepackage[utf8]{inputenc}
+\usepackage[acronym]{glossaries}
 
 \graphicspath{{diagrams/}}
 \addbibresource{sources.bib}
@@ -51,16 +53,50 @@
 \newcommand{\myStudyProgram}[0] {Informatics}
 \newcommand{\myDegreeCourse}[0] {9.2.5 Software Engineering}
 \newcommand{\myInstitute}[0] {Institute of Informatics and Software Engineering, FIIT STU, Bratislava}
+\newcommand{\FIITuniversity}[0] {Slovak University of Technology in Bratislava}
+\newcommand{\FIITuniversitySK}[0] {Slovenská technická univerzita v Bratislave}
+\newcommand{\FIITfaculty}[0] {Faculty of informatics and information technologies}
+\newcommand{\FIITfacultySK}[0] {Fakulta informatiky a informačných technológií}
+\newcommand{\FIITthesis}[0] {Bachelor's thesis}
+\newcommand{\FIITthesisSK}[0] {Bakalárska práca}
+\newcommand{\FIITstudyProgram}[0] {Informatics}
+\newcommand{\FIITstudyProgramSK}[0] {Informačná bezpečnosť}
+\newcommand{\FIITstudyField}[0] {Computer Science}
+\newcommand{\FIITdegreeCourseSK}[0] {9.2.1 Informatika}
+\newcommand{\FIITinstitute}[0] {Institute of Informatics, Information Systems and Software Engineering}
+\newcommand{\FIITinstituteSK}[0] {Ústav informatiky, informačných systémov a softvérového inžinierstva}
+
+\makeglossaries
+
+\newacronym{gcd}{GCD}{Greatest Common Divisor}
+
+\newacronym{lcm}{LCM}{Least Common Multiple}
 
 \begin{document}
 
+% \input{src/title_page}
+% \newpage
+
 \includepdf[pages={1}]{front_page.pdf}
 \newpage
+
+\includepdf[pages={1}]{assignment.pdf}
+\newpage
+
+\input{src/declaration}
 
 \input{src/annotation}
 
 \tableofcontents
 \newpage
+
+Given a set of numbers, there are elementary methods to compute 
+its \acrlong{gcd}, which is abbreviated \acrshort{gcd}. This process 
+is similar to that used for the \acrfull{lcm}.
+
+\glsaddall
+\printglossary[type=\acronymtype]
+% \printglossary
 
 \input{src/introduction}
 \newpage
@@ -74,7 +110,7 @@
 
 \section{Fault-tolerance techniques}
 
-This section focuses on the analysis and comparison of theoretical aspects of fault-tolerance, notes certain methods that were already implmenented and tested in practice and outlines methods chosen for our own implementation.
+This section focuses on the analysis and comparison of theoretical aspects of fault-tolerance, notes certain methods that were already implemented and tested in practice and outlines methods chosen for our own implementation.
 
 \input{src/analysis/single_version}
 \input{src/analysis/multi_version}
@@ -118,5 +154,6 @@ The implementation section outlines some selected methods which were implemented
 
 \newpage
 \printbibliography
+
 \end{document}
 

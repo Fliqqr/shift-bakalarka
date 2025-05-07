@@ -1,8 +1,8 @@
 \section{Motivation for Rust}
-The secondary purposes of this thesis is to analyze the suitability of Rust language for the implementation of fault-tolerant software. Historically, C has been the most dominant language in this problem space, but Rust has numerous benefits which make it a strong candidate.
+The secondary purposes of this thesis is to analyze the suitability of Rust language for the implementation of fault-tolerant software. Historically, C has been the most dominant language in this problem space, but Rust has numerous benefits which make it a strong competitor.
 
 \subsection{Safe by design}
-The goal of the Rust language is to eliminate the most common software bugs at the compiler level. An example of this is Rust's \textit{ownership and borrowing model} - a static code analysis done by the compiler \cite{rust_book:ownership}. It ensures memory safety of the program by explicity disallowing references to deallocated values, which prevents null pointer dereferencing, and also prevents race conditions by limiting the access to mutable variables. Rust's ownership model is a complex topic and explaning it in full is not within the scope of this thesis, more information can be found in the offical Rust book.
+The goal of the Rust language is to eliminate the most common software bugs at the compiler level. An example of this is Rust's \textit{ownership and borrowing model} - a static code analysis done by the compiler \cite{rust_book:ownership}. It ensures memory safety of the program by explicity disallowing references to deallocated values, which prevents null pointer dereferencing, and also prevents race conditions by limiting the access to mutable variables. Rust's ownership model is a complex topic and explaning it in full is not within the scope of this thesis, more information can be found in the offical Rust book\footnote{\url{https://doc.rust-lang.org/book/}}.
 
 \subsection{Robust error handling}
 Another major benefit of Rust is its approach to error handling. Rust splits errors into two categories: \textit{Unrecoverable} errors immediately terminate the execution of the program using the \textit{panic!()} macro and \textit{recoverable} errors which are return values of a function using the Result enum \cite{rust_book:error_handling}.
@@ -22,13 +22,13 @@ fn main() {
 \label{fig:rust_error}
 \end{figure}
 
-Using the approach of \textit{error-as-a-value} we can determine if a function executed successfully by simply checking its return value (see figure \ref{fig:rust_error}). This can act as a very quick and rudimentary form of fault tolerance, since it can be easily applied to any function.
+Using the approach of \textit{error-as-a-value} we can determine if a function executed successfully by simply checking its return value (see figure \ref{fig:rust_error}). This can act as a very quick and rudimentary form of fault detection, since it can be easily applied to any function.
 
 \subsection{Macro system}
-Rust has a powerful macro system which in essence works as a code pre-processor acting over the abstract syntax tree. Unlike C macros, which only work as direct text replacement, Rust macros allow for arbitrary modification and generation of code before the compilation step. Using Rust macros, various fault tolerance techniques can be implmeneted. An example of utilizing macros is highlighted in this very thesis, where a Control Flow Checkign using Signature Streams (CFCSS) technique is implemented using Rust macro system. 
+Rust has a powerful macro system which in essence works as a code pre-processor acting over the abstract syntax tree. Unlike C macros, which only work as direct text replacement, Rust macros allow for arbitrary modification and generation of code before the compilation step. Using Rust macros, various fault tolerance techniques can be implemented. An example of utilizing macros is highlighted in this very thesis, where a Control Flow Checking using Signature Streams (CFCSS) technique is implemented using Rust macro system. 
 
 \subsection{Low-level control and C integration}
-Rust demonstrates comparable functionality to C when it comes to low-level control - example being the ability to define custom heap allocator or the ability to use in-line assembly from within Rust. Since Rust uses LLVM under the hood, its compiler is able to link against existing C code. We can also easily use C functions within Rust by declaring the function signature (see figure \ref{fig:rust_extern}). This makes for an easy integration with existing C projects making Rust well suited as a higher level extension. This thesis demonstrates the use of Rust with FreeRTOS codebase written in C.
+Rust demonstrates comparable functionality to C when it comes to low-level control - example being the ability to define custom heap allocator or the ability to use in-line assembly from within Rust. Since Rust uses LLVM under the hood, its compiler is able to link against existing C code. We can also easily use C functions within Rust by declaring the function signature (see figure \ref{fig:rust_extern}). This makes for an easy integration with existing C projects making Rust well suited as a higher level extension. This thesis demonstrates the use of Rust with FreeRTOS codebase written in C\footnote{\url{https://github.com/FreeRTOS/FreeRTOS-Kernel}}.
 
 \begin{figure}[!h]
 \begin{lstlisting}[language=Rust]
