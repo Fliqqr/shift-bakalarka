@@ -1,10 +1,10 @@
 \subsection{Protection of variables} \label{sec:var_protection}
 
-Various unforseeable circumstances can lead to the corruption of program variables, from direct corruption of registers storing the variables to indirect side-effect stemming from errors within function that work with said variables. This section focuses on various techniques implemented to ensure the reliability of critical program variables with variying degree of protection depending on the use case.
+Various unforeseeable circumstances can lead to the corruption of program variables, from direct corruption of registers storing the variables to indirect side-effect originating from errors within function that work with said variables. This section focuses on various techniques implemented to ensure the reliability of critical program variables with variying degree of protection depending on the use case.
 
 \subsubsection{Copy and commit}
 
-Copy and commit is a method inspired by a common practice in database transaction handling, where a temporary copy of the data is modified, and changes are only applied to the original data upon an explicit commit. This pattern is particularly useful when modifications must be validated or selectively applied, reducing the risk of unintended side effects. In the Rust example shown in Figure~\ref{fig:rust_copy_commit}, a CopyCommit wrapper is used to hold a temporary copy of the value. Inside the bar function, the value is incremented, but the change only takes effect on the original data when commit() is called. This allows for greater control over when and how mutations are finalized.
+Copy and commit is a method inspired by a common practice in database transaction handling, where a temporary copy of the variable is created and modified insated of the original value. Upon an explicit commit, the original variable is overwritten with the modified copy. This pattern is particularly useful when modifications must be validated or selectively applied, reducing the risk of unintended side effects. In the Rust example shown in Figure~\ref{fig:rust_copy_commit}, a CopyCommit wrapper is used to hold a temporary copy of the value. Inside the bar function, the value is incremented, but the change only takes effect on the original data when commit() is called. This allows for greater control over when and how mutations are finalized.
 
 \begin{figure}[!h]
 \begin{lstlisting}[language=Rust]
@@ -51,10 +51,10 @@ In our implementation, a MultiVar wrapper around a variable is used to automatic
 
 Checksum is a technique to ensure a long-lived variable has not been corrupted during the execution of the program. If we need to store a variable for prolonged amount of time we can store a checksum along with it. The checksum is calculated by splitting the stored data into chunks of 32-bits each and XORing these chunks with one another, thereby generating an unique signature.
 
-Every time the protected variable is modified the checksum is updated by recalcuating the signature. Before the variable data is read again at a later point in the program, a checksum is recalculated and compared with the stored checkum. If the checksums match the variable has not been changed since the last proper modification. In the case of a checksum mistmatch, however, the variable is likely to have been unexpected modified or directly corrupted.
+Every time the protected variable is modified the checksum is updated by recalculating the signature. Before the variable data is read again at a later point in the program, a checksum is recalculated and compared with the stored checkum. If the checksums match the variable has not been changed since the last proper modification. In the case of a checksum mistmatch, however, the variable is likely to have been unexpected modified or directly corrupted.
 
 This technique is best utilized for global variables, since they live for the duration of the program and their correctness is paramount for the proper application functioning.
 
 \subsubsection{Considerations}
 
-The implemented methods for variable protection can give us more confidence in the correctness of the program variables, however, no matter the degree of protection and fault-tolerance implemented, faults can always manifest. Since data corruption can happen on the ALU directly, even if our stored variable is correct, the actual value being read and processed by the CPU can appear to be faulty. As such, the methods listed above are not sufficient on their own to ensure we get the correct result even if the program executes seemingly without fault.
+The implemented methods for variable protection can give us more confidence in the correctness of the program variables, however, no matter the degree of protection and fault-tolerance implemented, faults can always manifest. Since data corruption can happen on the ALU directly, even if our stored variable is correct, the actual value being read and processed by the CPU can appear to be faulty. As such, the methods listed above are not sufficient on their own to ensure we get the correct result even if the program executes without any errors detected.
