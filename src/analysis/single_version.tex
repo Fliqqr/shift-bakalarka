@@ -49,11 +49,11 @@ Benefit of partitioning is the ability of software to isolate errors. Provided t
 
 \subsubsection{Error detection}
 
-Fault-tolerant single-version application should meet two main criteria: self-protection and self-checking. Self-protection means that the application should be able to protect itself from external corruption by detecting errors in its input and output data as well as errors in its control flow. Self-checking means that the application component must be able to detect errors within itself and prevent propagation of these errors into other components. These two traits combined can be together considered as the ability of "error detection".
+Fault-tolerant single-version application should meet two main criteria: self-protection and self-checking. Self-protection means that the application should be able to protect itself from external corruption by detecting errors in its input and output data as well as errors in its control flow. Self-checking means that the application component must be able to detect errors within itself and prevent propagation of these errors into other components \cite{nasa:sft}. These two traits combined can be together considered as the ability of "error detection".
 
 Error detection covers a wide range of techniques used to locate errors and mitigate them. Some common approaches include:
 
-a) checksums and error correction codes (ECC), which embed additional metadata with the actual data in order to verify integrity and attempt to correct corrupted data. This approach allows for some degree of memory corruption mitigation but comes at the cost of memory overhead and additional processing per data-chunk which uses checksum or ECCs.
+a) checksums and \acrfullpl{ecc}, which embed additional metadata with the actual data in order to verify integrity and attempt to correct corrupted data. This approach allows for some degree of memory corruption mitigation but comes at the cost of memory overhead and additional processing per data-chunk which uses checksum or \acrshortpl{ecc}.
 
 b) assertion and runtime checks, which perform independent checks on the data during execution which ensures the data matches the expected outcomes at certain checkpoints.
 

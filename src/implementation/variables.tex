@@ -4,7 +4,7 @@ Various unforeseeable circumstances can lead to the corruption of program variab
 
 \subsubsection{Copy and commit}
 
-Copy and commit is a method inspired by a common practice in database transaction handling, where a temporary copy of the variable is created and modified insated of the original value. Upon an explicit commit, the original variable is overwritten with the modified copy. This pattern is particularly useful when modifications must be validated or selectively applied, reducing the risk of unintended side effects. In the Rust example shown in Figure~\ref{fig:rust_copy_commit}, a CopyCommit wrapper is used to hold a temporary copy of the value. Inside the bar function, the value is incremented, but the change only takes effect on the original data when commit() is called. This allows for greater control over when and how mutations are finalized.
+Copy and commit is a method inspired by a common practice in database transaction handling, where a temporary copy of the variable is created and modified insated of the original value. Upon an explicit commit, the original variable is overwritten with the modified copy. This pattern resembles \textit{libft} \cite{libft} variable protection and is particularly useful in combination with checkpoint and restart to avoid unintended side-effects. In the Rust example shown in Figure~\ref{fig:rust_copy_commit}, a CopyCommit wrapper is used to hold a temporary copy of the value. Inside the bar function, the value is incremented, but the change only takes effect on the original data when commit() is called. This allows for greater control over when and how mutations are finalized.
 
 \begin{figure}[!h]
 \begin{lstlisting}[language=Rust]

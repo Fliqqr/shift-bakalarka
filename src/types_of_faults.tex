@@ -8,13 +8,13 @@ Faults can be further split into various categories, the ones mostly relevant to
 Transient fault is a temporary fault which results in an error, such as a bit-flip in the register file. Transient faults are usually caused by random, external events (e.g. radiation) interfering with the system. A key characteristic of transient fault is the possibility to correct it by overwriting the corrupted region. Retrying the same process multiple times is usually enough to deal with a transient fault, since it is extremely unlikely a transient fault will occur repeatedly within the same process at successive time intervals. If a fault persists across multiple attempts, it is possible we are dealing with a permanent fault. \\
 
 \subsection{Permanent fault} 
-Permanent fault, also known as solid fault, is a lasting fault within the system that requires maintenance to remove. This could come in various forms, such as damaged hardware, corrupted memory or missing code. When dealing with a solid fault, retrying the same process is usually not enough as the same error will keep reoccurring. This approach requires alternatives and fallbacks within the system, which is outlined in more detail in section \ref{multi}. \\
+Permanent fault is a lasting fault within the system that requires maintenance to remove. This could come in various forms, such as damaged hardware, corrupted memory or missing code. When dealing with a permanent fault, retrying the same process is usually not enough as the same error will keep reoccurring. This approach requires alternatives and fallbacks within the system, which is outlined in more detail in section \ref{multi}. \\
 
 \subsection{Hardware faults}
 
 Hardware faults are caused by external factors beyond our control as software developers. They are usually caused by environmental influences, such as cosmic radiation in space, electro-magnetic fields, adverse weather conditions or heavy system usage.
 
-One of the most common hardware faults is memory corruption, which can appear in many forms and result from a wide range of causes. For instance, radiation exposure in space can cause SEUs, flipping individual bits in memory and altering data unpredictably. Similarly, physical damage to storage media, such as hard drives or SSDs, might corrupt specific regions of the file system, making certain data inaccessible or incorrect.
+One of the most common hardware faults is memory corruption, which can appear in many forms and result from a wide range of causes. For instance, radiation exposure in space can cause \acrshortpl{seu}, flipping individual bits in memory and altering data unpredictably. Similarly, physical damage to storage media, such as hard drives or SSDs, might corrupt specific regions of the file system, making certain data inaccessible or incorrect.
 
 % Memory corruption is not always catastrophic. While it can result in complete system failure and unrecoverable states, it is just as likely to manifest as small, hard-to-detect errors. These subtle corruptions might not immediately disrupt the software's functioning but can lead to unpredictable behavior over time.
 

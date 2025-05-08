@@ -7,8 +7,8 @@
 \usepackage{enumitem}
 \usepackage{pdfpages}
 \usepackage{listings, listings-rust}
+\usepackage[acronym,nomain,shortcuts]{glossaries}
 \usepackage[utf8]{inputenc}
-\usepackage[acronym]{glossaries}
 
 \graphicspath{{diagrams/}}
 \addbibresource{sources.bib}
@@ -66,13 +66,32 @@
 \newcommand{\FIITinstitute}[0] {Institute of Informatics, Information Systems and Software Engineering}
 \newcommand{\FIITinstituteSK}[0] {Ústav informatiky, informačných systémov a softvérového inžinierstva}
 
-\makeglossaries
+% \makeglossaries
+\makenoidxglossaries
 
-\newacronym{gcd}{GCD}{Greatest Common Divisor}
-
-\newacronym{lcm}{LCM}{Least Common Multiple}
+% Acronym definitions
+\newacronym{alu}{ALU}{arithmetic logic unit}
+\newacronym{bss}{BSS}{block starting symbol}
+\newacronym{cfcss}{CFCSS}{Control Flow Checking by Software Signatures}
+\newacronym{dp}{DP}{data path}
+\newacronym{ecc}{ECC}{error correction code}
+\newacronym{eddi}{EDDI}{Error Detection by Duplicated Instructions}
+\newacronym{gpr}{GPR}{general purpose register}
+\newacronym{ir}{IR}{intermediate representation}
+\newacronym{mdu}{MDU}{multiply-divide unit}
+\newacronym{nvp}{NVP}{N-version programming}
+\newacronym{nscp}{NSCP}{N self-checking programming}
+\newacronym{ra}{RA}{return address}
+\newacronym{ram}{RAM}{random access memory}
+\newacronym{rfc}{RFC}{register file control}
+\newacronym{seu}{SEU}{single-event upset} 
+\newacronym{sp}{SP}{stack pointer}
+\newacronym{swift}{SWIFT}{Software Implemented Fault Tolerance} 
+\newacronym{tp}{TP}{trap interrupt register} 
 
 \begin{document}
+ 
+
 
 % \input{src/title_page}
 % \newpage
@@ -90,13 +109,9 @@
 \tableofcontents
 \newpage
 
-Given a set of numbers, there are elementary methods to compute 
-its \acrlong{gcd}, which is abbreviated \acrshort{gcd}. This process 
-is similar to that used for the \acrfull{lcm}.
-
-\glsaddall
-\printglossary[type=\acronymtype]
-% \printglossary
+% Print the glossary
+\printnoidxglossaries
+\newpage
 
 \input{src/introduction}
 \newpage
@@ -110,7 +125,7 @@ is similar to that used for the \acrfull{lcm}.
 
 \section{Fault-tolerance techniques}
 
-This section focuses on the analysis and comparison of theoretical aspects of fault-tolerance, notes certain methods that were already implemented and tested in practice and outlines methods chosen for our own implementation.
+This section focuses on the analysis and comparison of theoretical aspects of fault tolerance and detection, notes certain methods that were already implemented and tested in practice and outlines methods chosen for our own implementation.
 
 \input{src/analysis/single_version}
 \input{src/analysis/multi_version}
@@ -148,6 +163,15 @@ The implementation section outlines some selected methods which were implemented
 \clearpage
 \section{Conclusion}
 
+Several prominent software-only fault-tolerance techniques were analyzed and a handful were selected for implementation. 
+
+Checkpoint and restart was implemented as means to facilitate recovery and act as a building block for multi-version techniques. Checkpoint and restart proved to be one of the most reliable fault tolerance methods as it could be added to any part of the software with ease and it served as good protection against timeouts, ensuring control could always be transferred back to the block from which the checkpoint was created.
+
+CFCSS was implemented to examine Rust's capability to implmenent techniques that are usually only thought of as "instruction level". Rust's macro system was used for this purpose and it proved to be a feasible alternative to what would otherwise have to be implemented as compiler level protection. Due to nature of Rust macros and syntax, however, CFCSS could not be applied to the entire application, but only to designated modules, limiting the coverage. CFCSS also proved to be not entirely compatible with checkpoint and restart due to side-effects in static variables required by CFCSS. Future research could be conducted into the implementation of CFCSS directly into Rust's compiler or LLVM pipeline, as well as adding full compatibility with checkpoint and restart by securing the static variables.
+
+Various multi-version techniques were also tried for select benchmarks where multi-version programming was fasible. Recovery blocks was implemented for fibonacci sequence benchmark, and various multi-version-inspired forms of protection were used for the other benchmark. Implementation of multi-version techniques proved relatively easy thanks to Rust's high-level concepts such as generic variables, however, their benefit could not be ascertained. The longer execution time of the benchmarks, when using multi-version, often outweight any benefit, given the increased time window for faults to manifest. This might arguably only be an issue in environments with high saturation of faults, such as our testing conditions.
+
+The software-implemented fault tolerance techniques did increase the success rate of our benchmark marginally. They also increased the reporting rate of errors and significantly decreased timeouts. We can say, with reasonable certainty, that the aforementioned methods did contribute positively towards the fault detection and tolerance of the system.
 
 \clearpage
 \section{Resumé}
