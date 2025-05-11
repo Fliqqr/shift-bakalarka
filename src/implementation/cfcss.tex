@@ -22,7 +22,7 @@ A runtime signature {$G_n$} is also created for the given protected module, init
 G_n = G_{n-1} \oplus d_n
 \end{equation}
 
-To ensure correct control flow, the newly calculated runtime signature must be equal to the function signature, otherwise an invalid branching occured.
+To ensure correct control flow, the newly calculated runtime signature must be equal to the function signature, otherwise an invalid branching occurred.
 
 \begin{equation}
 \label{eq:sig_check}
@@ -46,24 +46,24 @@ G_n = G_{n-1} \oplus d_n \oplus D_n
 
 \subsubsection{Macro implementation}
 
-The Rust macro generates static variables ({$G_n, D_n, s_n, d_n$}) during compile time and inserts additional code before and after the actual function code witin the protected module (see figure \ref{fig:rust_cfcss_macro}). The instructions inserted after the function block are equivalent to the ones inserted before, with the exception of restoring \textit{last adjuster} from stack instead of updating and storing it.
+The Rust macro generates static variables ({$G_n, D_n, s_n, d_n$}) during compile time and inserts additional code before and after the actual function code within the protected module (see figure \ref{fig:rust_cfcss_macro}). The instructions inserted after the function block are equivalent to the ones inserted before, with the exception of restoring \textit{last adjuster} from stack instead of updating and storing it.
 
 \begin{figure}[!h]
-    \begin{lstlisting}[language=Rust]
-    RUNTIME_SIGNATURE ^= #dif_name;
-    if is_fan_in {
-        RUNTIME_SIGNATURE ^= RUNTIME_ADJUSTER;
-    }
-    if #sig_name != RUNTIME_SIGNATURE {
-        return_to_checkpoint(ERROR_MSG);
-    }
-    if func_has_adjuster {
-        RUNTIME_ADJUSTER = #adj_name;
-    }
-    \end{lstlisting}
-    \caption{Rust - \acrshort{cfcss} instructions inserted before function block}
-    \label{fig:rust_cfcss_macro}
-    \end{figure}
+\begin{lstlisting}[language=Rust]
+RUNTIME_SIGNATURE ^= #dif_name;
+if is_fan_in {
+    RUNTIME_SIGNATURE ^= RUNTIME_ADJUSTER;
+}
+if #sig_name != RUNTIME_SIGNATURE {
+    return_to_checkpoint(ERROR_MSG);
+}
+if func_has_adjuster {
+    RUNTIME_ADJUSTER = #adj_name;
+}
+\end{lstlisting}
+\caption{Rust - \acrshort{cfcss} instructions inserted before function block}
+\label{fig:rust_cfcss_macro}
+\end{figure}
 
 This macro can be applied as shown in figure \ref{fig:rust_cfcss_macro_example} by specifying a module as \textit{\#[cfcss\_root]}. An entry function is designated with a special macro \textit{\#[entry]}, this macro embeds additional instruction that reset the runtime signature and adjuster of the module, allowing for repeated call of the entry point. An entry function can only be a function that is not called from within another function in the protected module (module being a collection of functions designated as seen in Fig. \ref{fig:rust_cfcss_macro_example} line 2).
 
@@ -94,4 +94,5 @@ However, due to the nature of the implementation, the developer is in full contr
 
 Since our implementation of \acrshort{cfcss} utilizes a purely code based approach it naturally comes with several limitations. Unlike the traditional approach, which implements \acrshort{cfcss} at \acrshort{ir} level by extending the LLVM pipeline we do not have access to the underlying instructions, which limits the possible density of the control flow checks. An \acrshort{ir} approach is able to precisely insert instructions after every branch and jump operations, and also has more granular control over the actual instructions being inserted. This means our implementation is more prone to control flow errors. Although not within the extent of this thesis, further improvements could be made by directly extending Rust's LLVM pipeline and integrating a \acrshort{cfcss} method at \acrshort{ir} level.
 
-Additionally, \acrshort{cfcss} is incompatible with the aforementioned checkpoint and restart system. As explained in section \ref{sec:checkpoint_considerations}, our checkpoint and restart system does not restore context of static variables, which \acrshort{cfcss} relies on for proper functioning. As such, checkpoints cannot be used within a \acrshort{cfcss} protected module, since if a checkpoint restart were to happen, the runtime signature and adjuster would not be reset to their proper pre-checkpoint values.
+Additionally, \acrshort{cfcss} is incompatible with the aforementioned checkpoint and restart system. As explained in section \ref{sec:checkpoint_considerations}, our checkpoint and restart system does not restore context of static variables, which \acrshort{cfcss} relies on for proper functioning. 
+% As such, checkpoints cannot be used within a \acrshort{cfcss} protected module, since if a checkpoint restart were to happen, the runtime signature and adjuster would not be reset to their proper pre-checkpoint values.

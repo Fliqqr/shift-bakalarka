@@ -7,8 +7,9 @@
 \usepackage{enumitem}
 \usepackage{pdfpages}
 \usepackage{listings, listings-rust}
-\usepackage[acronym,nomain,shortcuts]{glossaries}
+\usepackage[acronym,nomain,shortcuts,nonumberlist]{glossaries}
 \usepackage[utf8]{inputenc}
+\usepackage[toc,page]{appendix}
 
 \graphicspath{{diagrams/}}
 \addbibresource{sources.bib}
@@ -76,6 +77,7 @@
 \newacronym{dp}{DP}{data path}
 \newacronym{ecc}{ECC}{error correction code}
 \newacronym{eddi}{EDDI}{Error Detection by Duplicated Instructions}
+\newacronym{fi}{FI}{fault insertion}
 \newacronym{gpr}{GPR}{general purpose register}
 \newacronym{ir}{IR}{intermediate representation}
 \newacronym{mdu}{MDU}{multiply-divide unit}
@@ -110,6 +112,8 @@
 \newpage
 
 % Print the glossary
+\setacronymstyle{long-short}
+\setglossarystyle{long3col}
 \printnoidxglossaries
 \newpage
 
@@ -163,7 +167,11 @@ The implementation section outlines some selected methods which were implemented
 \clearpage
 \section{Conclusion}
 
-Several prominent software-only fault-tolerance techniques were analyzed and a handful were selected for implementation. 
+The purpose of this thesis was to analyze, implement, and test various software-based fault tolerance methods to improve the reliability on embedded systems.
+
+Several prominent software-only fault tolerance techniques were analyzed, including generalized single and multi-version programming methods, but also specific techniques such as \acrshort{eddi}, \acrshort{cfcss} and \acrshort{swift}. From this analysis, a subset of techniques was selected for implementation based on their practicality, fault coverage, and relevance to embedded systems. These included checkpoint/restart mechanisms, control-flow integrity verification, variable protection strategies, and multiversion programming.
+
+The selected techniques were implemented in Rust and tested within a FreeRTOS-based environment on a simulated 32-bit RISC-V platform. Faults were injected into selected processor components—including general-purpose registers, control units, and the ALU—to simulate common transient error scenarios. RAM was excluded from fault injection due to the limitations of software-only recovery mechanisms in the presence of persistent instruction memory corruption.
 
 Checkpoint and restart was implemented as means to facilitate recovery and act as a building block for multi-version techniques. Checkpoint and restart proved to be one of the most reliable fault tolerance methods as it could be added to any part of the software with ease and it served as good protection against timeouts, ensuring control could always be transferred back to the block from which the checkpoint was created.
 
@@ -173,11 +181,291 @@ Various multi-version techniques were also tried for select benchmarks where mul
 
 The software-implemented fault tolerance techniques did increase the success rate of our benchmark marginally. They also increased the reporting rate of errors and significantly decreased timeouts. We can say, with reasonable certainty, that the aforementioned methods did contribute positively towards the fault detection and tolerance of the system.
 
+Future work could explore hybrid approaches of combining code-level fault-tolerance techniques with compiler implemented ones. By extending the compiler pipeline of Rust, techniques such as CFCSS or SWIFT could be implemented at IR level and further boost the fault detection and tolerance of the software.
+
+
+
 \clearpage
 \section{Resumé}
+
+Intro
+
+S rastúcim dopytom po výkonnom softvéri pre zabudované systémy prichádza aj náročná úloha zabezpečiť ich bezchybnú funkčnosť. Zložitosť systémov neustále rastie - či už ide o hardvér alebo softvér - čo znamená aj viac miest, kde sa môžu objaviť chyby.
+
+Chyby môžu byť spôsobené vonkajšími faktormi, napríklad žiarením vo vesmíre, ale aj chybami pri vývoji softvéru. Keďže softvér a hardvér sú čoraz zložitejšie, je nepravdepodobné, že sa nám v blízkej budúcnosti podarí vytvoriť úplne bezchybné systémy. Preto je odolnosť voči chybám dôležitou súčasťou návrhu softvéru, najmä v kritických systémoch, kde by zlyhanie mohlo ohroziť ľudské životy. Zároveň však platí, že zvýšená spoľahlivosť často znamená kompromis - napríklad v podobe nižšieho výkonu alebo vyššej náročnosti vývoja.
+
+Tradične sa odolnosť voči chybám riešila hardvérovo, napríklad zdvojením alebo špeciálnym navrhnutím komponentov. Tento prístup je však finančne aj časovo veľmi náročný, keďže si vyžaduje výrobu špecializovaného hardvéru. V posledných rokoch sa preto čoraz častejšie využíva lacnejšie riešenie - použitie bežne dostupných súčiastok v kombinácii so softvérovými technikami, ktoré zabezpečujú odolnosť voči chybám.
+
+Táto práca sa zameriava na analýzu rôznych softvérových metód na zvýšenie odolnosti voči chybám. Preskúmame ich výhody a nevýhody a vybudujeme praktickú ukážku bežiacu na FreeRTOS a RISC-V jadre, ktorá implementuje vybrané metódy v programovacom jazyku Rust a overí ich účinnosť.
+
+Pre zabezpečenie konzistencie a jednotnosti pojmov používaných v tejto práci sa opierame o terminológiu definovanú v publikácii \cite{1335465}. Nižšie uvádzame vysvetlenie najdôležitejších a najčastejšie používaných pojmov. Ostatné špecifické termíny budú vysvetlené priamo v texte, keď sa prvýkrát objavia.
+
+\textbf{Služba} označuje funkciu, ktorú systém poskytuje používateľovi. Napríklad: diaľkový teplomer, ktorý zobrazuje správnu teplotu. \textbf{Systém} predstavuje všetky súčasti potrebné na poskytovanie tejto služby - teda procesor s vnútornými komponentmi, vstupno-výstupné zariadenia, senzory a príslušný softvér.
+
+Všetko, čo je súčasťou systému, sa nachádza v rámci tzv. \textbf{hranice systému}. Ide o pomyselnú čiaru, ktorá oddeľuje náš systém od jeho okolia.
+
+\textbf{Zlyhanie} je situácia, keď systém prestane správne poskytovať službu. Ide o prechod zo stavu správneho fungovania do nesprávneho. Napríklad, ak prestane fungovať vstupno-výstupné zariadenie, ktoré je kľúčové pre činnosť systému. Zlyhanie je dôsledkom \textbf{chyby}, čo je odchýlka od správneho stavu systému - napríklad neočakávaná zmena výstupnej hodnoty.
+
+Chyba býva spôsobená \textbf{poruchou}, teda skutočnou alebo predpokladanou príčinou chyby. Porucha môže byť dlho neaktívna (latentná), až kým sa neprejaví a nespôsobí chybu. Príkladom môže byť tzv. bit-flip v pamäti spôsobený žiarením.
+
+\textbf{Odolnosť voči poruchám} (angl. \textit{fault tolerance}) je schopnosť systému pokračovať vo svojej činnosti aj v prípade, že sa vyskytne porucha. Napríklad systém môže správne fungovať aj s jedným nefunkčným senzorom. Ak systém nedokáže plne splniť všetky svoje funkcie, ale stále je aspoň čiastočne použiteľný, hovoríme o \textbf{degradácii služby} - napríklad ak sa zníži frekvencia meraní alebo sa poskytujú len približné údaje.
+
+Zvládanie chýb a porúch je kľúčovým cieľom tejto práce. V nasledujúcich kapitolách sa pozrieme na konkrétne typy porúch, ktoré sa môžu vyskytnúť, a na metódy, ktoré nám môžu pomôcť zvládnuť ich dopady.
+
+Softvérové techniky zamerané na zvýšenie spoľahlivosti systémov možno rozdeliť do viacerých kategórií na základe ich architektúry a spôsobu implementácie. Jedným zo základných rozdelení je podľa toho, či systém používa jednu alebo viacero verzií kódu na zabezpečenie odolnosti voči chybám. Na tomto základe rozoznávame:
+
+\subsection*{Jedno-verziové metódy (Single-Version)}
+
+Tieto metódy sú navrhnuté tak, aby fungovali v rámci jednej verzie softvéru. Ich cieľom je rozpoznať chyby počas behu programu a reagovať na ne vhodným spôsobom, bez potreby redundantného vykonávania viacerých verzií.
+
+\begin{itemize}
+\item \textbf{Detekcia chýb (Error Detection)} - Monitorovanie behu programu s cieľom odhaliť nezvyčajné správanie alebo neplatné hodnoty, ktoré môžu naznačovať výskyt chyby.
+\item \textbf{Obnova po chybe (Fault Recovery)} - Mechanizmy umožňujúce návrat do bezpečného stavu, ako napríklad kontrolné body (checkpoints) a návrat do známeho funkčného stavu.
+\end{itemize}
+
+\subsection*{Viac-verziové metódy (Multi-Version)}
+
+Tieto metódy využívajú viaceré nezávislé verzie softvéru alebo algoritmov, ktoré vykonávajú rovnakú úlohu. Porovnávaním výsledkov týchto verzií je možné odhaliť chyby a zabezpečiť korektné výstupy.
+
+\begin{itemize}
+\item \textbf{Recovery Blocks} - Používajú hlavnú verziu kódu spolu s alternatívnymi blokmi, ktoré sa vykonajú, ak hlavná verzia zlyhá pri vopred definovanej kontrole správnosti (acceptance test).
+\item \textbf{N-Version Programming} - Viacero verzií programu je vyvíjaných nezávisle a spúšťaných paralelne. Výsledky sú porovnávané a systém sa riadi podľa väčšinového rozhodnutia.
+\end{itemize}
+
+\subsection*{Dátová diverzita (Data Diversity)}
+
+Na rozdiel od kódovej redundancie sa dátová diverzita zameriava na zmenu vstupných dát rôznymi spôsobmi (napr. reexpresia), čím sa znižuje pravdepodobnosť, že chyba ovplyvní všetky varianty rovnakým spôsobom. Táto technika je často využívaná ako doplnok k iným formám redundancie.
+
+\subsection*{Predchádzajúce práce a inšpirácie}
+
+V tejto práci boli analyzované a čiastočne implementované aj niektoré známe softvérové techniky z predchádzajúceho výskumu:
+
+\begin{itemize}
+\item \textbf{EDDI (Error Detection by Duplicated Instructions)} - Softvérová metóda založená na duplikácii inštrukcií a porovnávaní výsledkov na detekciu chýb v behu programu.
+\item \textbf{CFCSS (Control Flow Checking by Software Signatures)} - Technika overovania správnosti tokov riadenia pomocou generovania a porovnávania podpisov pre jednotlivé časti kódu.
+\item \textbf{SWIFT (Software-Implemented Fault Tolerance)} - Pokročilý prístup kombinujúci duplikáciu inštrukcií, kontrolu tokov riadenia a optimalizácie zamerané na zníženie režijných nákladov.
+\end{itemize}
+
+Tieto metódy tvoria základ pre návrh a výber konkrétnych prístupov, ktoré boli implementované a testované v praktickej časti tejto práce.
+
+Rust je moderný programovací jazyk, ktorý bol v tejto práci zvolený pre implementáciu odolnosti voči chybám kvôli svojim jedinečným vlastnostiam. Je navrhnutý s dôrazom na bezpečnosť už pri preklade kódu - napríklad pomocou tzv. vlastníckeho modelu, ktorý zabraňuje typickým chybám ako dereferencovanie neplatného ukazovateľa alebo súbežný prístup k premennej. Okrem toho ponúka robustný systém spracovania chýb, kde každá funkcia môže vracať informáciu o chybe ako hodnotu, čím umožňuje jednoduchú detekciu zlyhaní bez nutnosti špeciálnych nástrojov. Rust tiež disponuje pokročilým makro systémom, ktorý umožňuje generovanie a úpravu kódu pred samotnou kompiláciou - čo sa v tejto práci využilo pri implementácii techniky CFCSS. Zároveň ponúka nízkoúrovňový prístup porovnateľný s jazykom C a jednoduchú integráciu s existujúcimi C knižnicami, čo umožnilo prepojenie Rust kódu s FreeRTOS, ktorý je napísaný práve v C. Vďaka týmto vlastnostiam je Rust silným kandidátom pre vývoj spoľahlivého softvéru v zabudovaných systémoch.
+
+Táto práca bola vyvíjaná pre 32-bitové RISC-V jadro bežiace v simulovanom prostredí s 1MB pamäťou RAM, z ktorej bolo 8KB vyhradených pre zásobník a ďalších 8KB pre haldu. Systém využíva jadro FreeRTOS, ktoré je vhodné pre prostredia s obmedzenými zdrojmi. FreeRTOS spravuje spúšťanie úloh (tasks) pomocou plánovača a hardvérového prerušenia typu \textit{Machine Timer Interrupt}. Na systémové operácie sa používajú softvérové výnimky spúšťané cez inštrukciu \texttt{ecall}. Všetky prerušenia sú obsluhované pomocou vektorovej tabuľky, ktorá efektívne presmeruje vykonávanie do správnej obslužnej rutiny. Na integráciu Rustu s FreeRTOS sme použili knižnicu \texttt{FreeRTOS-Rust}, ktorá poskytuje prepojenie s C kódom. Keďže náš simulovaný systém nevyžaduje podporu atómových inštrukcií, ktoré pôvodná knižnica vyžadovala, boli tieto časti nahradené ne-atómovými verziami. Okrem toho sme použili \texttt{riscv} knižnicu pre Rust, ktorá zabezpečuje preklad pre RISC-V platformu a poskytuje nástroje na prácu s registrami a obsluhou prerušení. Z dôvodu výkonovej optimalizácie sme odstránili časť kódu, ktorá pred spustením programu nulovala statické premenné (\acrshort{bss} segment), keďže Rust garantuje inicializáciu premenných už pri kompilácii. Tým sa znížilo zaťaženie procesora a obmedzila sa pravdepodobnosť výskytu chýb počas štartu programu.
+
+Jednou z hlavných súčastí navrhnutého systému odolnosti voči chybám je mechanizmus \textit{checkpoint and restart}, ktorý umožňuje obnoviť program do predchádzajúceho stabilného stavu po zistení chyby. Funguje tak, že si počas vykonávania programu uloží aktuálny stav registrov (x1 až x31) a návratovú adresu do špeciálnej pamäťovej oblasti, čím vytvorí tzv. checkpoint. Po detekcii chyby – či už prostredníctvom výnimky procesora alebo softvérového overenia – sa systém vráti späť na tento bod a pokúsi sa znova vykonať daný úsek kódu. Implementácia využíva statickú pamäť pre posledný checkpoint a zásobník pre staršie, čo umožňuje vnorené checkpointy. Výhodou tohto riešenia je nízka režijná záťaž (približne 400 inštrukcií bez optimalizácií) a flexibilita pri kombinácii s inými technikami. Nevýhodou však je, že systém neukladá dáta mimo registrov, teda napríklad zásobník, haldu alebo globálne premenné. Ak sa v checkpoint blokoch vykonajú zmeny mimo sféru zotavenia, tieto sa pri návrate späť nevrátia do pôvodného stavu. Preto je vhodné tento mechanizmus kombinovať s doplnkovými technikami ochrany premenných (viď sekcia \ref{sec:var_protection}). Celkovo checkpoint systém slúži ako základná infraštruktúra pre budovanie robustnejších stratégií zotavenia.
+
+Implementácia CFCSS v tejto práci využíva Rust makrá namiesto klasického prístupu na úrovni inštrukcií alebo LLVM IR. Každá funkcia v chránenom module je považovaná za blok s jedinečným podpisom, pričom kontrolný graf medzi blokmi sa vytvára počas prekladu. Na základe tohto grafu sa počas behu sleduje tzv. runtime podpis, ktorý sa aktualizuje pri každom skoku podľa rozdielu medzi blokmi. Ak runtime podpis nesúhlasí s očakávaným podpisom bloku, deteguje sa chyba v riadení toku programu. Problémom sú tzv. fan-in bloky (viacero predchodcov), pre ktoré sa zavádzajú tzv. adjustéry podpisov. Implementácia v Ruste generuje všetky potrebné kontrolné premenne počas prekladu a vkladá inštrukcie pred aj za každý blok. Približne 100 dodatočných inštrukcií je vložených na každú funkciu, čo môže ovplyvniť výkon. Výhodou je však kontrola nad rozsahom ochrany – čím viac funkcií, tým vyššia miera kontroly, ale aj vyššia režijná záťaž. Táto verzia CFCSS však nie je taká presná ako implementácia na úrovni LLVM IR, kde je možné presnejšie vkladať kontrolné inštrukcie po každom skoku. Navyše, CFCSS nie je kompatibilný s mechanizmom checkpoint and restart, pretože závisí na statických premenných, ktoré nie sú obnovované pri návrate na checkpoint, čím by došlo k narušeniu kontrolného mechanizmu.
+
+Testovanie implementovaných techník bolo vykonané pomocou nástroja Hardisc – simulátora odolného RISC-V jadra so schopnosťou vkladať poruchy vo forme bit-flipov počas behu programu. Po úvodnom oneskorení 36 000 cyklov (na inicializáciu FreeRTOS) boli chyby vkladané každých približne 2500 cyklov, pričom sa mohlo v rámci jedného benchmarku objaviť až 100 porúch. Poruchy boli vkladané iba do registrov a častí vykonávacej pipeline (GPR, ALU, RFC, MDU, DP, TP), pamäť RAM bola z testovania vynechaná, keďže softvérové mechanizmy nie sú schopné opraviť trvalé chyby v inštrukciách uložených v RAM. Testovanie prebiehalo na piatich benchmarkoch, z ktorých každý reprezentoval bežné operácie v embedded systémoch (napr. výpočty, triedenie), pričom NFC (Nested Function Calls) bol špeciálne zvolený na testovanie techniky CFCSS. Výsledky ukázali, že zapnutá ochrana výrazne zvýšila schopnosť detekovať chyby a minimalizovala počet neobslúžených chýb a timeoutov, aj keď zlepšenie v správnosti výpočtov bolo mierne. Merania výkonu prebehli na bezchybnom jadre a ukázali nárast počtu CPU cyklov o 10–33 \%, pričom vyšší nárast bol zaznamenaný pri benchmarkoch s komplexnejšou štruktúrou riadenia programu. Nakoniec sa hodnotil aj dopad na veľkosť binárneho súboru – v neoptimalizovanej verzii narastol o vyše 40 \%, zatiaľ čo pri použití kompilátorových optimalizácií len o 9 \%. Avšak optimalizácie môžu narušiť správne fungovanie ochranných mechanizmov, keďže môžu zmeniť poradie inštrukcií. Preto je ich použitie v kontexte odolného softvéru potrebné starostlivo zvážiť.
+
+Cieľom tejto diplomovej práce bolo analyzovať, implementovať a testovať rôzne softvérové metódy tolerancie na chyby s cieľom zlepšiť spoľahlivosť embedded systémov. Po analýze niekoľkých techník, ako sú generalizované metódy jedného a viacerých verzií, CFCSS, EDDI a SWIFT, boli vybrané na implementáciu techniky ako checkpoint/restart mechanizmy, overenie integrity riadiaceho toku, stratégie ochrany premenných a multiverzné programovanie. Tieto metódy boli implementované v Rust-e a testované na platforme 32-bitového RISC-V simulátora v prostredí FreeRTOS.
+
+Implementácia checkpoint/restart sa ukázala ako veľmi spoľahlivá a efektívna na obnovu po chybách. CFCSS, realizovaný pomocou Rust makier, bol úspešný, no limitovaný len na určité moduly. Vyskytli sa problémy s kompatibilitou CFCSS a checkpoint/restart kvôli statickým premenným. Multi-verzné techniky boli implementované, ale často spôsobovali vyššie časové nároky bez výrazného zlepšenia.
+
+Záverom, softvérové techniky tolerancie na chyby zlepšili úspešnosť testov, znížili počet timeoutov a zvýšili detekciu chýb. Budúci výskum by mohol zahŕňať hybridné prístupy kombinujúce techniky na úrovni kódu s tými implementovanými v kompilátore.
+
+
 
 \newpage
 \printbibliography
 
+\clearpage
+
+\begin{appendices}
+
+Reg. No.: FIIT-100241-117028
+
+\section{Work plan}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Week} & \textbf{Activity} \\
+\hline
+Week 1 & Familiarization with the topic \\
+Week 2 & Familiarization with the topic \\
+Week 3 & Reading up general information about the topic \\
+Week 4 & Gathering and reading articles and papers about the topic \\
+Week 5 & Gathering and reading articles and papers about the topic \\
+Week 6 & Gathering and reading articles and papers about the topic \\
+Week 7 & Gathering and reading articles and papers about the topic \\
+Week 8 & Writing the analysis \\
+Week 9 & Writing the analysis \\
+Week 10 & Writing the analysis \\
+Week 12 & Writing the analysis \\
+Week 12 & Polishing up BP1 \\
+\hline
+\end{tabular}
+\caption{Work plan - BP1}
+\label{tab:work_plan_bp1}
+\end{table}
+
+The first semester of working on the bachelor's thesis was mostly dedicated to reading and gathering of materials. This phase consisted of finding relevant articles describing software-implemented fault-tolerance methods that would be feasible to implment. This was surprisingly difficult as the problem space mostly revolves around hardware-implemented fault-tolerance methods.
+
+Once a general idea of the thesis became clear, we moved onto the analysis writing stage. Here, general ideas were outlined, this served as a springboard to aid in implementation during the second phase.
+
+Overall, the work plan was mostly adhered to and the first part of the thesis was submitted without much issue.
+
+\newpage
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Week} & \textbf{Activity} \\
+\hline
+Week 1 & Familiarization with the technology \\
+Week 2 & Setting up the development environment \\
+Week 3 & Setting up Rust integration \\
+Week 4 & Debugging \\
+Week 5 & Creating checkpoint and restart  \\
+Week 6 & Creating variable protection  \\
+Week 7 & Creating CFCSS framework \\
+Week 8 & Implementing multi-version programming \\
+Week 9 & Setting-up benchmarks and testing enviornment \\
+Week 10 & Testing the benchmarks + thesis writing \\
+Week 12 & Polishing up the benchmarks and testing + thesis writing \\
+Week 12 & Final touches on BP2 \\
+\hline
+\end{tabular}
+\caption{Work plan - BP2}
+\label{tab:work_plan_bp2}
+\end{table}
+
+The second semester was mostly focused on the implementation of previously analyzed software-tolerance methods. Before implementation, however, the development environment had to be set up. Having to work with a brand new architecture - RISC-V, and unusual operating system - FreeRTOS, the enviornment setup took a lot of time and debugging, especially considering the need to integrate it with Rust programming language.
+
+After the environment setup, implementation of the selecte techniques began. Once the software was able to run in the simulated environment, we began setting up the fault-insertion and constructing benchmarks to execute.
+
+The testing and polishing of the benchmarks was also accompanied with writing down the findings and implementation details into the thesis.
+
+The plan was overall adhered to quite well and work on the thesis went along smoothly.
+
+\clearpage
+\section{Digital Files}
+
+The digital submission that comes with this thesis includes a complete Rust project, organized and structured to support the development, testing, and simulation of the implemented fault tolerance methods. Below is an overview of the main components and folders in the project:
+
+\begin{itemize}
+    \item \textbf{.cargo/} - Contains the Rust compiler build target.
+    
+    \item \textbf{FreeRTOS-Kernel} - Included as a Git submodule. This provides the real-time operating system used by the project.
+    
+    \item \textbf{libs/} - Contains cloned Rust libraries for working with RISC-V:
+    \begin{itemize}
+        \item \texttt{riscv} - Low-level access to RISC-V-specific features.
+        \item \texttt{riscv-rt} - Runtime support for RISC-V embedded programs.
+    \end{itemize}
+    These libraries were included directly in the project so they could be modified to fit our specific needs.
+    
+    \item \textbf{link\_files/} - Contains the linker scripts and memory layout files required to build the project for our target platform. These files were copied from Rust RISC-V library\footnote{\url{https://github.com/rust-embedded/riscv}} and modified, unless stated otherwise within the file.
+    
+    \item \textbf{macros/} - Holds the macro-based implementation of the CFCSS fault tolerance technique (Control Flow Checking by Software Signatures).
+    
+    \item \textbf{rng/} - A small utility module for generating pseudo-random numbers, used mainly for generation of signatures for CSFCSS and for testing purposes.
+    
+    \item \textbf{src/} - This is where the main Rust application code lives, including the core logic for all fault tolerance methods.
+    
+    This folder further splits into several important subfolders:
+    
+    \begin{itemize}
+        \item \textbf{benchmarks/} - Contains code for protected and unprotected benchmarks used for testing.
+        \item \textbf{checkpoint/} - Contains the implementation of the Checkpoint and Restart system.
+        \item \textbf{events/} - Contains hooks for RISC-V and FreeRTOS system events.
+        \item \textbf{utils/} - Contains helper functions.
+        \item \textbf{vars/} - Contains variable protection implementation.
+        \item Base directory contains the program entry point - \textit{main.rs} as well as some helper and configuration files.
+    \end{itemize}
+    
+    \item \textbf{build.rs} - A build script that handles some of the behind-the-scenes configuration during compilation.
+    
+    \item \textbf{Cargo.toml} and \textbf{Cargo.lock} - Standard Rust files that define the project's dependencies, configuration, and build settings.
+    
+    \item \textbf{FreeRTOSConfig.h} - Configuration file for FreeRTOS, where system-level settings are defined.
+    
+    \item \textbf{Makefile} - A helper script to make building and running the simulation easier and more consistent.
+    When running the project locally, set the MODELSIM and HARDISC variables to your corresponding installation paths.
+
+    \item \textbf{examples/} - Folder which contains compiled binary and object dump of an example benchmark (Fibonacci), both with and without protection. This is included so the basic functionality of the project can be verified without the need to compile the entire project from scratch. 
+\end{itemize}
+
+Altogether, this project structure was designed to be modular, easy to navigate, and flexible enough to support low-level embedded development in Rust with FreeRTOS on a RISC-V target.
+
+
+\clearpage
+\section{Technical Documentation}
+
+This section provides detailed instructions on how to configure, build, and run the project included in the digital submission. The project is designed for simulation and testing in a RISC-V environment using Rust, FreeRTOS, and the Hardisc fault injection framework.
+
+\subsection{Prerequisites}
+
+Before building or running the project, ensure the following software and toolchains are installed and properly configured:
+
+\begin{itemize}
+    \item \textbf{Rust} with \texttt{nightly} toolchain support. Install via \url{https://www.rust-lang.org/}.
+    \item \textbf{RISC-V GNU Toolchain} compiled with support for:
+    \begin{itemize}
+        \item \texttt{abi=ilp32}
+        \item \texttt{arch=rv32imac\_zicsr}
+    \end{itemize}
+    Toolchain can be downloaded and compiled from \url{https://github.com/riscv-collab/riscv-gnu-toolchain}.
+    \item \textbf{ModelSim - Intel FPGA Edition} (tested with version 18.1), available at:\\
+    \url{https://www.intel.com/content/www/us/en/software-kit/750368/modelsim-intel-fpgas-standard-edition-software-version-18-1.html}
+    \item \textbf{Hardisc} fault injector cloned, configured, and compiled. See its documentation for detailed setup instructions (\url{https://github.com/janomach/the-hardisc}).
+    \item \textbf{Make} tool installed (\url{https://www.gnu.org/software/make/}). 
+\end{itemize}
+
+% \clearpage
+\subsection{Configuration and Setup}
+
+\begin{enumerate}
+    \item Open the provided \texttt{Makefile} in the project files and update the following paths:
+    \begin{itemize}
+        \item \texttt{MODELSIM} - Set to the installation path of ModelSim.
+        \item \texttt{HARDISC} - Set to the path where Hardisc is cloned and built.
+    \end{itemize}
+    
+    \item Set Rust to use the nightly toolchain:
+    \begin{verbatim}
+    rustup default nightly
+    \end{verbatim}
+
+    \item Install the RISC-V target for Rust:
+    \begin{verbatim}
+    rustup target add riscv32imac-unknown-none-elf
+    \end{verbatim}
+
+    \item Download the FreeRTOS-Kernel submodule:
+    \begin{verbatim}
+    git submodule update --init --recursive
+    \end{verbatim}
+\end{enumerate}
+
+\subsection{Compilation and Simulation}
+
+\begin{enumerate}
+    \item To choose which benchmarks to compile and whether to include fault protection, edit the Cargo.toml file by settings the \textit{features} section.
+    \begin{verbatim}
+        features = ["fib", "no_prot"]
+    \end{verbatim}
+    This will compile the Fibonacci benchmark without any protection.
+    \item To compile the project:
+    \begin{verbatim}
+    make
+    \end{verbatim}
+    The compiled binary and object dump can be found in the /target folder.
+
+    \item To run the simulation without fault injection:
+    \begin{verbatim}
+    make sim
+    \end{verbatim}
+
+    \item To run the simulation with fault injection using Hardisc follow the steps listed in \url{https://github.com/janomach/the-hardisc}.
+\end{enumerate}
+
+
+\end{appendices}
+
 \end{document}
+
 

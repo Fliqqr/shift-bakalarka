@@ -1,31 +1,73 @@
 \subsection{Multiversion}
 
-The implemented multiversion techniques are culmination of most of the techniques discuessed so far.
+The implemented multiversion techniques are culmination of most of the techniques discussed so far.
 
 \subsubsection{Recovery blocks}
 
-Recover blocks have been implemented by taking advantage of the checkpoint system. By wrapping each call to a different version function in a checkpoint context we ensure that the function will return even in case of an error. We can then check the return value of the checkpoint block to determine if the version executed successfully. As seen in Figure \ref{fig:recover_blocks}, if the version returns successfully, we immediatelly return the value, otherwise we try another version. The checkpoint is set to 0 retries, meaning each one of the versions (fib\_v1, fib\_v2, fib\_v3) will only be tried once.
+Recover blocks have been implemented by taking advantage of the checkpoint system. Each call to a version is wrapped in a checkpoint context, ensuring we get back some result, even if incorrect. As seen in Figure \ref{fig:recover_blocks}, if the version returns successfully, we immediately return the value, otherwise we try another version.
 
 \begin{figure}[!h]
 \begin{lstlisting}[language=Rust]
 pub fn fib_rec_blocks(x: u8) -> Result<u32, &'static str> {
-    // Version 1
-    if let Ok(res) = checkpoint(0, || fib_v1(x)) {
-        return Ok(res);
-    }
-    // Version 2
-    if let Ok(res) = checkpoint(0, || fib_v2(x)) {
-        return Ok(res);
-    }
-    // Version 3
-    if let Ok(res) = checkpoint(0, || fib_v3(x)) {
-        return Ok(res);
+    for i in 0..3 {
+        if let Ok(res) = checkpoint(0, || version(i, x)) {
+            return Ok(res);
+        }
     }
     Err("Versions exhausted")
 }
 \end{lstlisting}
 \caption{Rust - Recovery blocks}
 \label{fig:recover_blocks}
+\end{figure}    
+
+The utilized version selection (line 3) is a simple branching logic (Fig. \ref{fig:version_select}) where the higher index version tend to employ stronger protection.
+
+\begin{figure}[!h]
+\begin{lstlisting}[language=Rust]
+fn version(v: usize, x: u8) -> Result<u32, &'static str> {
+    let res = match v {
+        0 => fib_v1(x),
+        1 => fib_v2(x),
+        2 => fib_v3(x),
+        _ => return Err("Unknown version"),
+    };
+    Ok(res)
+}
+\end{lstlisting}
+\caption{Rust - Version selection}
+\label{fig:version_select}
 \end{figure}
 
 Important thing to mention is the lack of any verification of the result. In the case of recovery blocks, we only care about the function executing without obvious errors. The return value could be corrupted by an undetectable bit flip somewhere in the function variables. Recovery blocks alone does not deal with this issue.
+
+\subsubsection{N-version programming}
+
+As opposed to recovery blocks, which only executes one version at a time until one returns correctly, the implemented \acrshort{nvp} techniqe executes all available version in sequence. The results from all of the versions are then passed into a voter function (Fig. \ref{fig:n_ver_rust}, line 12), which was implemented using Boyer-Moore majority vote algorithm \footnote{\url{https://en.wikipedia.org/wiki/Boyer-Moore_majority_vote_algorithm}}.
+
+\begin{figure}[!h]
+\begin{lstlisting}[language=Rust]
+pub fn fib_n_version(x: u8) -> Result<u32, &'static str> {
+    let mut results = [0; 3];
+    for i in 0..3 {
+        checkpoint(0, || {
+            let Ok(res) = version(i, x) else {
+                return Err(checkpoint::Error::Retry);
+            };
+            results[i] = res;
+            Ok(())
+        });
+    }
+    find_majority(&results)
+}
+\end{lstlisting}
+\caption{Rust - N-version programming}
+\label{fig:n_ver_rust}
+\end{figure}
+
+The used version select is indentical to the one used with recovery blocks and can be seen in Fig. \ref{fig:version_select}.
+
+\subsubsection{Versions}
+
+The protection used in the individual versions varied widely throughout developement and testing, but as a rule of thumb, the lower index version usually employed fewer, or no, fault tolerance techniques. Primary version usually employed no protection and the alternate versions utilized combination of variable protection via duplication or triplication, repeated calcuation and or complete function rewrites using alternate algorithms.
+

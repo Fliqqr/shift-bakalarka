@@ -1,25 +1,10 @@
-\section{Nomenclature}
 
-For the sake of consistency in the terms used in this document, we will refer to the naming conventions and definitions as outlined in \cite{1335465}. Below are the definitions of the most crucial terms used. \\
+For the sake of consistency in the terms used in this document, we will refer to the naming conventions and definitions as outlined in \cite{1335465}. Below are the definitions of the most crucial, widely used, terms used. Other specific terms will be defined on per-need basis throughout the thesis.
 
-\textbf{Failure} is an event that occurs when the delivered service deviates from correct service. A service fails either because it does not comply with the functional specification, or because this specification did not adequately describe the system function. A service failure is a transition from correct service to incorrect service, i.e., to not implementing the system function \cite{1335465}.
-\textit{Example: An I/O component not communicating with the system.} \\
+A \textbf{service} refers to the intended function delivered to the user by some system. An example could be a remote thermometer delivering correct temperature readings.
+The \textbf{system} encompasses all components necessary to deliver this service, including the processor with its internal elements, I/O peripherals, sensors, and the associated program code. For instance, a microprocessor with temperature sensors and I/O elements. 
+Everything that is considered as a part of this system lies within the \textbf{system boundary}. This boundary can be thought as an imaginary partition separating our system from the environment.  
 
-\textbf{Failure domain}
+\textbf{Failure} is an event that occurs when the service permanently deviates from correct functioning. A service failure is a transition from correct service to incorrect service, i.e., to not implementing the system function \cite{1335465}. For example, a failure might occur if an I/O component ceases to communicate with the system. Failures are usually caused by an \textbf{error}, which is a deviation of the service from its correct state. It is a part of the system's state that may lead to service failure \cite{1335465}. Errors are the observable result of issues within the software and or hardware, for example, an unexpected change to the output variables. This unexpected change is commonly caused by a \textbf{fault}, which is the actual or hypothesized cause of an error. Faults are usually considered dormant until manifested, causing an error \cite{1335465}. An example being a bit-flip in memory caused by radiation. 
 
-\textbf{Fault} is the actual or hypothesized cause of an error. Faults are usually considered dormant until manifested, causing an error \cite{1335465}. An example of a fault might be hardware issue causing an I/O device to send corrupted data as input. If the software is not designed to deal with incorrect input this would lead to an internal error, possibly causing a service failure.
-\textit{Example: A bit-flip in memory caused by radiation.} \\
-
-\textbf{Error} is a deviation of the service from its correct state. It is a part of the system's state that may lead to service failure \cite{1335465}. Errors are the observable result of issues within the software and or hardware. 
-\textit{Example: A fault that changes the output variable's value.} \\
-
-\textbf{Fault Tolerance} is the system's ability to continue operating correctly in the presence of faults. Rather than eliminating faults entirely, fault-tolerant systems are designed to detect, isolate, and recover from faults before they cause service failures. 
-\textit{Example: System operating correctly with one of its sensors not reponding.}\\
-
-\textbf{System} is the collection of all components required to execute our program. This includes the processor with all of its components as well as any I/O peripherals and sensors, but also the program code.
-\textit{Example: A microprocessor with a thermometer and antenna for communication.} \\
-
-\textbf{System boundary} defines what is considered part of the system and what is not. It can be thought of as an imaginary line separating the components that make up the system from the outside world. Everything within the system boundary is part of the system, while everything outside is part of the environment.
-
-\textbf{Service degradation} is the process of delivering incomplete or less optimal but still acceptable service. An example could be lowering video quality. 
-
+Being able to detect and tolerate errors originating from faults is the topic of this thesis and is commonly referred to as \textbf{fault tolerance}. Fault tolerance refers to the system's ability to continue functioning correctly despite the presence of faults. For example a system delivering service correctly with one of its sensors not responding. Sometimes, the fault might lead to the system not fully meeting its functional requirements, however, it might still be usable to certain extent. This is referred to as \textbf{service degradation}, an example of which could be decreasing the frequency of sensor readings, or reporting approximate data.
