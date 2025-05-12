@@ -217,6 +217,7 @@ Softvérové techniky zamerané na zvýšenie spoľahlivosti systémov možno ro
 Tieto metódy sú navrhnuté tak, aby fungovali v rámci jednej verzie softvéru. Ich cieľom je rozpoznať chyby počas behu programu a reagovať na ne vhodným spôsobom, bez potreby redundantného vykonávania viacerých verzií \cite{nasa:sft}.
 
 \begin{itemize}
+\item \textbf{Modularita} - Rozdelenie programu na nezávislé moduly a zabezpečenie, že chyby z jedného modulu nepresihnu do žiadneho iného.
 \item \textbf{Detekcia chýb (Error Detection)} - Monitorovanie behu programu s cieľom odhaliť nezvyčajné správanie alebo neplatné hodnoty, ktoré môžu naznačovať výskyt chyby \cite{nasa:sft}.
 \item \textbf{Obnova po chybe (Fault Recovery)} - Mechanizmy umožňujúce návrat do bezpečného stavu, ako napríklad kontrolné body (checkpoints) a návrat do známeho funkčného stavu. Delia sa na \textit{backward recovery} a \textit{forward recovery} \cite{shubu}. 
 \end{itemize}
@@ -228,6 +229,7 @@ Tieto metódy využívajú viaceré nezávislé verzie softvéru alebo algoritmo
 \begin{itemize}
 \item \textbf{Recovery Blocks} \cite{lyu:sft} - Používajú hlavnú verziu kódu spolu s alternatívnymi blokmi, ktoré sa vykonajú, ak hlavná verzia zlyhá pri vopred definovanej kontrole správnosti (acceptance test).
 \item \textbf{N-Version Programming} \cite{aa:nvp} - Viacero verzií programu je vyvíjaných nezávisle a spúšťaných paralelne. Výsledky sú porovnávané a systém sa riadi podľa väčšinového rozhodnutia.
+\item \textbf{N Self-checking Programming} \cite{nscp} - Variácia NVP s pridanými obnovovacími a akceptačnými technikami v každej verzii.
 \end{itemize}
 
 \subsection*{Dátová diverzita (Data Diversity)}
@@ -266,7 +268,7 @@ Testovanie implementovaných techník bolo vykonané pomocou nástroja Hardisc\f
 
 \subsection*{Zhodnotenie}
 
-Cieľom tejto diplomovej práce bolo analyzovať, implementovať a testovať rôzne softvérové metódy tolerancie na chyby s cieľom zlepšiť spoľahlivosť embedded systémov. Po analýze niekoľkých techník, ako sú generalizované metódy jedného a viacerých verzií, CFCSS, EDDI a SWIFT, boli vybrané na implementáciu techniky ako checkpoint and restart mechanizmy, overenie integrity riadiaceho toku, stratégie ochrany premenných a multiverzné programovanie. Tieto metódy boli implementované v Rust-e a testované na platforme 32-bitového RISC-V simulátora v prostredí FreeRTOS.
+Cieľom tejto práce bolo analyzovať, implementovať a testovať rôzne softvérové metódy tolerancie na chyby s cieľom zlepšiť spoľahlivosť embedded systémov. Po analýze niekoľkých techník, ako sú generalizované metódy jedného a viacerých verzií, CFCSS, EDDI a SWIFT, boli vybrané na implementáciu techniky ako checkpoint and restart mechanizmy, overenie integrity riadiaceho toku, stratégie ochrany premenných a multiverzné programovanie. Tieto metódy boli implementované v Rust-e a testované na platforme 32-bitového RISC-V simulátora v prostredí FreeRTOS.
 
 Implementácia checkpoint and restart sa ukázala ako veľmi spoľahlivá a efektívna na obnovu po chybách. CFCSS, realizovaný pomocou Rust makier, bol úspešný, no limitovaný len na určité moduly. Vyskytli sa problémy s kompatibilitou CFCSS a checkpoint and restart kvôli statickým premenným. Multi-verzné techniky boli implementované, ale často spôsobovali vyššie časové nároky bez výrazného zlepšenia.
 
