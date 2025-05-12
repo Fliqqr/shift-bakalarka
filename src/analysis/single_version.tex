@@ -1,9 +1,9 @@
 
 \subsection{Single-version} \label{single}
 
-Single-version is a category of techniques which focus on creating a singular, robust implementation of software by integrating safety checks and redundancies directly into the software design process.
+Single-version is a category of techniques which focus on creating a singular, robust implementation of software by integrating safety checks and redundancies directly into the software design process \cite{nasa:sft}.
 
-This technique emphasizes the detection of errors within the software and the ability to recover from them. Error detection typically involves monitoring the system for unexpected behaviors or inconsistencies, which could signal the presence of a fault. Recovery mechanisms then act to mitigate the effects of these faults.
+This technique emphasizes the detection of errors within the software and the ability to recover from them. Error detection typically involves monitoring the system for unexpected behaviors or inconsistencies, which could signal the presence of a fault \cite{shubu}. Recovery mechanisms then act to mitigate the effects of these faults.
 
 Handling an error can be done in various ways. Most common would be to backtrack to a saved checkpoint and retry the part of the application where an error was discovered in the hopes of getting the correct result on the subsequent retries. This usually works well with transient faults, but it is likely to fail in the presence of a permanent fault.
 
@@ -63,19 +63,23 @@ Error detection is a crucial aspect of single-version application, since there i
 
 \subsubsection{Fault recovery}
 
-Fault recovery is a process of restoring the program to a functional state after an error has been detected. Fault recovery in single-version techniques mostly consists of a program rollback. This can be either a full restart, effectively rolling back the program to its initial state, or a more advanced technique such as checkpoint and restart.
+Fault recovery is a process of restoring the program to a functional state after an error has been detected. Fault recovery in single-version techniques mostly consists of a program rollback, also known as \textit{backward recovery} \cite{shubu}. This can be either a full restart, effectively rolling back the program to its initial state, or a more advanced technique such as checkpoint and restart\cite{nasa:sft}.
 
 Checkpoint and restart could be considered the basis of some of the more advanced fault tolerance techniques. Before the execution of a critical process a checkpoint is created, which captures some or all of the program state. At the end of the execution, an acceptance check is performed on the process output, if an error is detected rollback is initiated and the process is restarted.
 
 \begin{figure}[hbt]
     \centering
-    \includegraphics[width=0.8\textwidth]{diagrams/checkpoint/checkpoint.png}
+    \includegraphics[width=0.7\textwidth]{diagrams/checkpoint/checkpoint.png}
     \caption{Checkpoint and restart}
     \label{fig:checkpoint}
 \end{figure}
+
+An alternative to backward recovery is \textit{forward recovery} \cite{shubu}, which is the process of correctly proceeding with execution even if error is detected. This is usually done by creating and storing three (or more copies) of critical data (\textit{data triplication}), performing the same operation on all copies, and using a majority voter to detect errors.
+
+Forward recovery via data triplication is, generally speaking, more computationally demaning than backward recovery, since the same operation(s) has to be performed per each data copy, even during fault-free operation, and the copies have to be compared at certain synchronization points. On the other hand, backward recovery incurs minimal overhead while setting up a checkpoint and only requires additional computation when an error is actually detected.
 
 \subsubsection{Considerations for single-version techniques}
 
 Single-version fault tolerance techniques are largely easier to develop when compared to the ones discussed in the following section. With this relative simplicity comes the drawback of not being well suited for some situations. While these techniques should work well for transient faults that are unlikely to reoccur, a single version fault-tolerant system will fail when attempting to deal with persistent faults. Even if an error is successfully detected, single version techniques provide no clear way of dealing with errors that stem from, or are heavily influenced by the design of the system. As an example, if the memory region containing a critical function has been permanently damaged, it matters not how many times we attempt to rerun the function, it will always cause an error. For this reason, single version techniques should be reserved for parts of software which are not mission critical.
 
-In order to effectively deal with solid faults, we need to consider multi-version techniques covered in the following section. A lot of these techniques take inspiration from single version techniques, or even directly build on top of them.
+In order to effectively deal with permanent faults, we need to consider multi-version techniques covered in the following section. A lot of these techniques take inspiration from single version techniques, or even directly build on top of them.

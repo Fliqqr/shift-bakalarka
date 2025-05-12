@@ -1,11 +1,12 @@
 \subsection{Multi-version} \label{multi}
 
-Multi-version techniques build on the idea of multiple software versions which all meet the same specifications. These versions are interchangeable in terms of their output, but each version executes differently from the rest, ensuring that no two version share the same resources.
-Multiple versions of the same software are executed either in sequence or in parallel, each utilizing different error detection and recovery methods, to have the highest probability of completing the task successfully.
+Multi-version techniques build on the idea of multiple software versions which all meet the same specifications. The rational behind multiple version is that different components should fail differently \cite{nasa:sft}.
+These versions are interchangeable in terms of their output, but each version executes differently from the rest, ensuring that no two version share the same resources.
+Multiple versions of the same software are executed either in sequence or in parallel \cite{nasa:sft}, each utilizing different error detection and recovery methods, to have the highest probability of completing the task successfully.
 
 \subsubsection{Recovery blocks}
 
-Recovery blocks is a simple form of multi-version programming, expanding upon the idea of "checkpoint and restart". Unlike its single version counterpart, however, recovery blocks does not re-execute the same code again, but instead chooses a different version to try next.
+Recovery blocks \cite{lyu:sft} is a simple form of multi-version programming, expanding upon the idea of "checkpoint and restart". Unlike its single version counterpart, however, recovery blocks does not re-execute the same code again, but instead chooses a different version to try next.
 
 A key advantage of the recovery blocks technique is that, in most cases, the primary version will be the only one to execute \cite{lyu:sft}, allowing alternate versions to prioritize redundancy and safety over performance. This enables the design of backup versions with gradually reduced performance requirements, ensuring robust fallback options without excessive resource consumption.
 
@@ -18,11 +19,10 @@ A key advantage of the recovery blocks technique is that, in most cases, the pri
 
 % \break
 
-Since faults are relatively rare compared to normal execution, this approach often achieves an optimal balance of performance and reliability. In some situations, the alternate versions do not necessarily have to produce a correct result, but a result that satisfies the acceptance check \cite{lyu:sft}. Alternate version can gradually degrade the service in order to accomplish the bare minimum requirements.
+In some situations, the alternate versions do not necessarily have to produce a correct result, but a result that satisfies the acceptance check \cite{lyu:sft}. Alternate version can gradually degrade the service in order to accomplish the bare minimum requirements.
 
-The overall success of the recovery block scheme rests to a great extent on the effectiveness of the error detection mechanisms used — especially (but not solely) the acceptance test. The acceptance test must be simple otherwise there will be a significant chance that it will itself contain design faults, and so fail to detect some errors, and/or falsely identify some conditions as being erroneous. Moreover, the test will introduce a run-time overhead which could be unacceptable if it is very complex. The development of simple, effective acceptance tests can thus be a difficult task, depending on the actual specification \cite{lyu:sft}.
+The overall success of the recovery block scheme rests to a great extent on the effectiveness of the error detection mechanisms used — especially (but not solely) the acceptance test. The acceptance test must be simple otherwise there will be a significant chance that it will itself contain faults, and so fail to detect some errors, and/or falsely identify some conditions as being erroneous. Moreover, the test will introduce a run-time overhead which could be unacceptable if it is very complex. The development of simple, effective acceptance tests can thus be a difficult task, depending on the actual specification \cite{lyu:sft}.
 
-A considerable drawback of recovery blocks is its inability to detect faults which might appear as normal execution of the program. As an example, if a bit-flip in the output register of a function results in a value that the acceptance check does not consider invalid an incorrect result will be returned. This error would go undetected without additional checks on top of recovery blocks.
 
 \subsubsection{N-version programming}
 

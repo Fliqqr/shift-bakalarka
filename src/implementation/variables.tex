@@ -26,19 +26,17 @@ While this method gives us more control over when variables are modified and hel
 
 \subsubsection{Multiple redundant variables}
 
-Another way we can secure a variable is creating multiple copies of it and applying any modification to all the copies. The modified copies are then compared against each other to detect any mismatch. With two copies of a variable, we can detect an error but cannot correct it, since we cannot tell which one of the copies is faulty. With three copies, we can detect an error but also perform correction, if at least two copies of the variable are equal. The more copies we create the more likely we are to have a majority of the variables be equal, therefore the more confident we can be in our fault-tolerance.
+Another way we can secure a variable is creating multiple copies of it and applying any modification to all the copies. The modified copies are then compared against each other to detect any mismatch. With two copies of a variable, we can detect an error but cannot correct it, since we cannot tell which one of the copies is faulty - we can use this to trigger backward recovery via the checkpoint system. With three copies, we can detect an error but also perform correction (if at least two copies of the variable are equal) effectively performing forward recovery and avoiding rollback. The more copies we create the more likely we are to have a majority of the variables be equal, therefore the more confident we can be in our fault-tolerance.
 
 \begin{figure}[!h]
 \begin{lstlisting}[language=Rust]
 // Creates 3 identical copies
 let mut a = MultiVar::new(0);
-
 // Applies the edit function to each of the copies and performs equality check
 if let Err(e) = a.edit(|ptr_a| {
     *ptr_a += 1;
 }) {
     // Error while updating variable
-    ...
 }
 \end{lstlisting}
 \caption{Rust - Multiple variable redundancy}
@@ -47,14 +45,4 @@ if let Err(e) = a.edit(|ptr_a| {
 
 In our implementation, a MultiVar wrapper around a variable is used to automatically instantiate three separate copies of the variable as seen in Figure \ref{fig:multivar}. By calling the edit function on the wrapper, we map any modification to all the copies of the variable. The edit function also includes an internal checks which tries to correct the variables in a case of a mismatch. If correction is not possible this function returns an error.
 
-\subsubsection{Checksum} \label{sec:checksum}
-
-Checksum is a technique to ensure a long-lived variable has not been corrupted during the execution of the program. If we need to store a variable for prolonged amount of time we can store a checksum along with it. The checksum is calculated by splitting the stored data into chunks of 32-bits each and XORing these chunks with one another, thereby generating an unique signature.
-
-Every time the protected variable is modified the checksum is updated by recalculating the signature. Before the variable data is read again at a later point in the program, a checksum is recalculated and compared with the stored checksum. If the checksums match the variable has not been changed since the last proper modification. In the case of a checksum mismatch, however, the variable is likely to have been unexpected modified or directly corrupted.
-
-This technique is best utilized for global variables, since they live for the duration of the program and their correctness is paramount for the proper application functioning.
-
-\subsubsection{Considerations}
-
-The implemented methods for variable protection can give us more confidence in the correctness of the program variables, however, no matter the degree of protection and fault-tolerance implemented, faults can always manifest. Since data corruption can happen on the ALU directly, even if our stored variable is correct, the actual value being read and processed by the CPU can appear to be faulty. As such, the methods listed above are not sufficient on their own to ensure we get the correct result even if the program executes without any errors detected.
+Unfortunately, even if the stored variables are correct, faults can still manifest on the ALU directly while the variable is being read, effectively behaving as if the stored variable was erroneous. Due to this, variable protection alone can never give us complete certainty in any computed result. 

@@ -1,10 +1,10 @@
 \section{Testing}
 
-Testing of the implementation was done on Hardisc\footnote{\url{https://github.com/janomach/the-hardisc}} (simulated using ModelSim) - a hardened RISC-V core with the ability to statically insert faults during runtime of the program. The form of the fault is a single bit-flip. The \acrfull{fi} was delayed by approximately 36 000 CPU cycles to give FreeRTOS enough time to initialize, after which point one fault was inserted approximately every 2500 CPU cycles. Depending on the duration of the benchmark, up to 100 faults could be inserted per benchmark. For the purpose of narrowing down the scope of the thesis, faults were only inserted in the general purpose registers and the execution pipeline (\acrshort{rfc}, \acrshort{alu}, \acrshort{mdu}, \acrshort{dp}, \acrshort{tp}).
+Testing of the implementation was done on Hardisc\footnote{\url{https://github.com/janomach/the-hardisc}} (simulated using ModelSim) - a hardened RISC-V core with the ability to statically insert faults during runtime of the program. The form of the fault is a single bit-flip inserted approximately every 2500 CPU cycles. Depending on the duration of the benchmark, up to 100 faults could be inserted per benchmark. For the purpose of narrowing down the scope of the thesis, faults were only inserted in the general purpose registers and the execution pipeline (\acrshort{rfc}, \acrshort{alu}, \acrshort{mdu}, \acrshort{dp}, \acrshort{tp}).
 
-Notably, \acrfull{ram} was exempt from \acrshort{fi}s during our testing. Should a non-transient error occur in the part of \acrshort{ram} which holds the program instructions there would be no way to properly recover from it using software-only fault tolerance. Usually, \acrshort{ram} and CPU duplication is used, effectively running the same program twice in parallel with set synchronization points. This method is outside of the scope of software implemented fault tolerance.
+Notably, \acrfull{ram} was exempt from \acrshortpl{fi} during our testing. Should a non-transient error occur in the part of \acrshort{ram} which holds the program instructions there would be no way to properly recover from it using software-only fault tolerance. Usually, \acrshort{ram} and CPU duplication is used, effectively running the same program twice in parallel with set synchronization points. This method is outside of the scope of software implemented fault tolerance. Hardisc also provides hardware-implemented \acrshort{ram} protection which we can take advantage of.
 
-The methods outlined in the implementation section, however, are in theory capable of detecting and recovering from certain faults in \acrshort{ram}. As mentioned in section \ref{sec:checksum}, checksums are capable of detecting corruption in variables, this includes variables stored in the \acrshort{ram}. Similarly, using multiversion programming can provide tolerance even in the case of non-transient error occurring in one of the versions. Due to general unreliability of this approach, however, the testing on \acrshort{ram} \acrshort{fi}s was not conducted.
+The methods outlined in the implementation section, however, are in theory capable of detecting and recovering from certain faults in \acrshort{ram}. For example, using multiversion programming can provide tolerance even in the case of non-transient error occurring in one of the versions. Due to general unreliability of this approach, however, the testing on \acrshort{ram} \acrshortpl{fi} was not conducted.
 
 \subsection{Benchmarks}
 
@@ -12,7 +12,7 @@ A set of benchmarks was selected to evaluate the effectiveness of the implemente
 
 In addition to standard benchmarks, one unique benchmark - \textit{Nested Function Calls} (NFC) was included. This benchmark involves a series of functions invoking one another in a nested manner, creating intertwined control-flow graph. It was specifically chosen to assess the performance impact of \acrshort{cfcss}, which is particularly sensitive to complex function call hierarchies.
 
-Benchmark programs report results in one of two ways, successful execution (0) and unrecoverable error (1). Any other return status code is considered an unknown error. The reliability of the fault tolerance was measured as a sum of successful executions and correctly reported unrecoverable errors divided by the overall number of executions (25 per benchmark). Each benchmark was given equal amount of time to execute (100 000 CPU cycles), if the time threshold is reached the program ends in a timeout. Notably, a timeout does not necessarily mean the benchmark itself did not execute correctly. It is very common for the FreeRTOS scheduler to be the source of an error leading to a timeout. FreeRTOS can take upwards of 10 000 CPU cycles to initialize the scheduler and being the execution of the first task. During this time window, the program is exceptionally prone to faults resulting in unrecoverable errors, as our implemented fault tolerance approach does not directly modify the FreeRTOS codebase or instructions being executed. As such, in the case of a timeout, the output logs are examined to determine if the benchmark succeeded.
+Benchmark programs report results in one of the following ways, successful execution (0), unrecoverable error (1) and incorrect result (2) written to the platform specific output register (EXIT\_REG - 0x80000004). Any other return status code is considered an unknown error. The reliability of the fault tolerance was measured as a sum of successful executions and correctly reported unrecoverable errors divided by the overall number of executions (25 per benchmark). Each benchmark was given equal amount of time to execute (100 000 CPU cycles), if the time threshold is reached the program ends in a timeout. Notably, a timeout does not necessarily mean the benchmark itself did not execute correctly. It is very common for the FreeRTOS scheduler to be the source of an error leading to a timeout. FreeRTOS can take upwards of 30 000 CPU cycles to initialize the scheduler and being the execution of the first task. During this time window, the program is exceptionally prone to faults resulting in unrecoverable errors, as our implemented fault tolerance approach does not directly modify the FreeRTOS codebase or instructions being executed. As such, in the case of a timeout, the output logs are examined to determine if the benchmark succeeded. 
 
 \begin{table}[h]
 \centering
@@ -74,8 +74,6 @@ As previously mentioned, the initial startup of FreeRTOS scheduler took up a sig
 
 For this specific test, we also lowered the FI saturation down to one fault every 4000 CPU cycles. To ensure faults would still affect our tests, the benchmark was adjusted to take more time, by increasing the Fibonacci number being computed. We executed the benchmark 100 times, with an equal split between protected and unprotected variants.
 
-The findings from this test can be seen in Fig. \ref{tab:fib50_delayed}. The rate of timeout and unexpected program terminations became roughly equivalent, reinforcing our suspicion that timeouts mostly occur as a result of fault manifesting in the scheduler subroutines. The rate of successful executions, however, rose up significantly in the protected benchmark - 47.82\% increase over the unprotected benchmark, compared to the increase of approx. 20\% in the benchmarks without FI delay. This further solidifies the claim that our fault tolerance methods can increase the success rate of the program.
-
 \begin{table}[h]
 \centering
 % \resizebox{\linewidth}{!}{%
@@ -83,14 +81,38 @@ The findings from this test can be seen in Fig. \ref{tab:fib50_delayed}. The rat
 \hline
 \textbf{Fibonacci (FI Delay)} & \textbf{Correct} & \textbf{Errors Reported} & \textbf{Timeouts} \\
 \hline
-Unprotected & 23 & 17 & 4 \\
-Protected & 34 & 8 & 5 \\
+Unprotected & 23 & 23 & 4 \\
+Protected & 34 & 13 & 5 \\
 \hline
 \end{tabular}
 % }
 \caption{Fibonacci benchmark with delayed FI}
 \label{tab:fib50_delayed}
 \end{table}
+
+The findings from this test can be seen in Fig. \ref{tab:fib50_delayed}. The rate of timeout and unexpected program terminations became roughly equivalent, reinforcing our suspicion that timeouts mostly occur as a result of fault manifesting in the scheduler subroutines. The rate of successful executions, however, rose up significantly in the protected benchmark - 47.82\% increase over the unprotected benchmark, compared to the increase of approx. 20\% in the benchmarks without FI delay. 
+This further solidifies the claim that our fault tolerance methods, when implemented properly and in sufficient amount, can increase the success rate of the program.
+
+\begin{table}[h]
+\centering
+% \resizebox{\linewidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Matrix (FI Delay)} & \textbf{Correct} & \textbf{Errors Reported} & \textbf{Timeouts} \\
+\hline
+Unprotected & 10 & 36 & 4 \\
+Protected & 28 & 12 & 10 \\
+\hline
+\end{tabular}
+% }
+\caption{Matrix benchmark with delayed FI}
+\label{tab:matrix50_delayed}
+\end{table}
+
+We also ran the matrix benchmark under the same FI conditions, including an initial delay. Figure \ref{tab:matrix50_delayed} shows some interesting results: the protected version produced correct outputs much more often - an impressive 180\% improvement over the unprotected one. However, we also saw an unexpected increase in timeouts for the protected version, which did not happen with the other benchmarks.
+
+A likely reason for the timeouts is the added complexity of the protection mechanism in this particular test. For example, if the checkpoint system is set to retry too many times, it could cause the program to take much longer to finish. In some cases, the program might not have crashed - it could have just needed more time to complete its computations. If we allowed a longer execution time, the number of timeouts might have gone down. In future work, we could explore adding software watchdogs that monitor whether the program is actually stuck or still working. This would let us adjust time limits more intelligently, avoiding endless waits while still giving the program a fair chance to finish.
+
 
 \subsection{Performance impact}
 
@@ -118,6 +140,11 @@ CRC & 8278 & 10614 & 28.21\% \\
 \end{table}
 
 As expected, looking at Table \ref{tab:time_increase} we see an increase in CPU cycles it takes to execute the protected version as opposed to the unprotected one. Fibonacci, Matrix and Bubblesort (group one) test only incurred roughly 12\% increase, while both NFC and CRC (group two) incurred much more substantial increase. The main difference between these two groups of tests is their flow graph complexity. Group one has linear control flow and mostly consists of 1-4 function call, meaning very little time is spent on \acrshort{cfcss} checking. Group two has more complex control flow resulting in a lot of \acrshort{cfcss} checks.
+
+Performance impact is one of the most important aspects to consider when it comes to software-implemented fault tolerance. During testing, we observed certain complex fault tolerance techniques (such as \acrshort{nvp}) to sometimes result in worse outcomes, even compared to completely unprotected alternatives. This is likely the direct result of increased execution time, as the more time it takes the program to execute the higher the chance of faults occuring and manifesting into errors.
+
+However, if performance is not a concern and the sole focus is getting the correct result we can use increased execution times to our advantage. By padding our program with no operation (NOP) instructions we could, in theory, decrease the possibility of error manifesting during the execution of an actual program instruction. This approach is yet to be tested, but if effective could incorporated as an extension of the LLVM pipeline. 
+
 
 % Comparing the results of select tests without CFCSS (Table \ref{tab:cfcss_nocfcss}), we can deduce several things. The additional CPU cycles needed for checkpoint and multiversion protection is between 1000 and 1500 cycles. This is a constant increase and should not scale with the control flow complexity or instruction size of the tests. The CFCSS 
 
